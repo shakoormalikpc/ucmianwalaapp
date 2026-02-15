@@ -63,11 +63,6 @@ const MemberDetail = ({ member, onBack }: Props) => {
     e.preventDefault();
     const amount = Number(payForm.amount);
     if (amount <= 0) return;
-    const remaining = Number(memberData.remaining_amount);
-    if (amount > remaining) {
-      toast({ title: "Error", description: `Amount exceeds remaining balance (Rs. ${remaining.toLocaleString()})`, variant: "destructive" });
-      return;
-    }
 
     const { error } = await supabase.from("payments").insert({
       member_id: member.id,

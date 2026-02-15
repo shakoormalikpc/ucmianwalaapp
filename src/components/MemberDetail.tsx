@@ -194,7 +194,7 @@ const MemberDetail = ({ member, onBack }: Props) => {
                     <div className="bg-muted/50 p-3 rounded-lg text-sm space-y-1">
                       <div className="flex justify-between"><span>Total Amount:</span><span className="font-semibold">Rs. {Number(memberData.total_required).toLocaleString()}</span></div>
                       <div className="flex justify-between"><span>Installments:</span><span className="font-semibold">{selectedInstallments}</span></div>
-                      <div className="flex justify-between"><span>Per Installment:</span><span className="font-semibold">Rs. {Math.ceil(Number(memberData.total_required) / Number(selectedInstallments)).toLocaleString()}</span></div>
+                      <div className="flex justify-between"><span>Per Installment:</span><span className="font-semibold">Rs. 1,000</span></div>
                     </div>
                   )}
                   <Button onClick={handleSetInstallmentPlan} disabled={!selectedInstallments} className="w-full">

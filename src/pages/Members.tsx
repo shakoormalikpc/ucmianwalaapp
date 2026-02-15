@@ -26,7 +26,7 @@ const Members = () => {
     membership_type: "annual" as "annual" | "life",
     membership_start_date: new Date().toISOString().split("T")[0],
     rafaqat_no: "",
-    installment_option: false, notes: "",
+    installment_option: false, total_installments: 0, notes: "",
   });
   const { user } = useAuth();
   const { toast } = useToast();
@@ -41,17 +41,20 @@ const Members = () => {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.full_name.trim()) return;
+    const { total_installments, ...rest } = form;
     const { error } = await supabase.from("members").insert({
-      ...form,
-      rafaqat_no: form.rafaqat_no || null,
+      ...rest,
+      rafaqat_no: rest.rafaqat_no || null,
       created_by: user?.id,
-    });
+      total_installments: rest.installment_option ? total_installments : 0,
+      paid_installments: 0,
+    } as any);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Member added successfully" });
       setDialogOpen(false);
-      setForm({ full_name: "", father_name: "", phone: "", cnic: "", address: "", rafaqat_no: "", membership_type: "annual", membership_start_date: new Date().toISOString().split("T")[0], installment_option: false, notes: "" });
+      setForm({ full_name: "", father_name: "", phone: "", cnic: "", address: "", rafaqat_no: "", membership_type: "annual", membership_start_date: new Date().toISOString().split("T")[0], installment_option: false, total_installments: 0, notes: "" });
       fetchMembers();
     }
   };
@@ -130,9 +133,27 @@ const Members = () => {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <Switch checked={form.installment_option} onCheckedChange={(v) => setForm({ ...form, installment_option: v })} />
+                <Switch checked={form.installment_option} onCheckedChange={(v) => setForm({ ...form, installment_option: v, total_installments: v ? 1 : 0 })} />
                 <Label>Installment Payment</Label>
               </div>
+              {form.installment_option && (
+                <div className="space-y-1.5">
+                  <Label>Total Installments</Label>
+                  <Select value={String(form.total_installments)} onValueChange={(v) => setForm({ ...form, total_installments: Number(v) })}>
+                    <SelectTrigger><SelectValue placeholder="Select installments" /></SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3, 4, 5, 6].map((n) => {
+                        const amt = form.membership_type === "annual" ? 1000 : 6000;
+                        return (
+                          <SelectItem key={n} value={String(n)}>
+                            {n} Installment{n > 1 ? "s" : ""} — Rs. {Math.ceil(amt / n).toLocaleString()}/month
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="space-y-1.5">
                 <Label>Notes</Label>
                 <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} />

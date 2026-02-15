@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { FileDown } from "lucide-react";
 import { format } from "date-fns";
+import { exportToPDF, exportToExcel } from "@/lib/exportUtils";
 
 const Payments = () => {
   const [payments, setPayments] = useState<any[]>([]);
@@ -22,9 +25,23 @@ const Payments = () => {
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">All Payments</h1>
-        <p className="page-description">Total: Rs. {total.toLocaleString()} from {payments.length} payments</p>
+      <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="page-title">All Payments</h1>
+          <p className="page-description">Total: Rs. {total.toLocaleString()} from {payments.length} payments</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => exportToPDF({
+            title: "Payments Report", headers: ["Receipt #", "Member", "Amount", "Date", "Method"],
+            rows: payments.map((p) => [p.receipt_number, (p.members as any)?.full_name || "—", `Rs. ${Number(p.amount).toLocaleString()}`, format(new Date(p.payment_date), "dd MMM yyyy"), p.payment_method || "—"]),
+            filename: "payments-report",
+          })}><FileDown className="w-4 h-4 mr-1" />PDF</Button>
+          <Button variant="outline" size="sm" onClick={() => exportToExcel({
+            title: "Payments", headers: ["Receipt #", "Member", "Amount", "Date", "Method"],
+            rows: payments.map((p) => [p.receipt_number, (p.members as any)?.full_name || "—", Number(p.amount), format(new Date(p.payment_date), "dd MMM yyyy"), p.payment_method || "—"]),
+            filename: "payments-report",
+          })}><FileDown className="w-4 h-4 mr-1" />Excel</Button>
+        </div>
       </div>
       <Card>
         <CardContent className="p-0">

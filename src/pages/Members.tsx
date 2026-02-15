@@ -12,8 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, UserPlus, Trash2 } from "lucide-react";
+import { Plus, Search, UserPlus, Trash2, FileDown } from "lucide-react";
 import MemberDetail from "@/components/MemberDetail";
+import { exportToPDF, exportToExcel } from "@/lib/exportUtils";
 
 const Members = () => {
   const [members, setMembers] = useState<any[]>([]);
@@ -104,10 +105,28 @@ const Members = () => {
           <h1 className="page-title">Members</h1>
           <p className="page-description">{members.length} total members</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button><UserPlus className="w-4 h-4 mr-2" />Add Member</Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => {
+            const config = {
+              title: "Members Report",
+              headers: ["Rafaqat No.", "Name", "Phone", "Type", "Paid", "Remaining", "Status"],
+              rows: filtered.map((m) => [m.rafaqat_no || "—", m.full_name, m.phone || "—", m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual", `Rs. ${Number(m.total_paid).toLocaleString()}`, `Rs. ${Number(m.remaining_amount).toLocaleString()}`, m.status?.replace("_", " ")]),
+              filename: "members-report",
+            };
+            exportToPDF(config);
+          }}><FileDown className="w-4 h-4 mr-1" />PDF</Button>
+          <Button variant="outline" size="sm" onClick={() => {
+            exportToExcel({
+              title: "Members",
+              headers: ["Rafaqat No.", "Name", "Phone", "Type", "Paid", "Remaining", "Status"],
+              rows: filtered.map((m) => [m.rafaqat_no || "—", m.full_name, m.phone || "—", m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual", Number(m.total_paid), Number(m.remaining_amount), m.status?.replace("_", " ")]),
+              filename: "members-report",
+            });
+          }}><FileDown className="w-4 h-4 mr-1" />Excel</Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button><UserPlus className="w-4 h-4 mr-2" />Add Member</Button>
+            </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="font-heading">Add New Member</DialogTitle>
@@ -188,6 +207,7 @@ const Members = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Card>

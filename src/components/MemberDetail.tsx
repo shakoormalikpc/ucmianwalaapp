@@ -103,7 +103,7 @@ const MemberDetail = ({ member, onBack }: Props) => {
     : "Lifetime";
 
   const hasInstallmentPlan = memberData.total_installments > 0;
-  const installmentAmount = hasInstallmentPlan ? Math.floor(Number(memberData.total_required) / memberData.total_installments) : 0;
+  const installmentAmount = 1000;
   const remainingInstallments = hasInstallmentPlan ? memberData.total_installments - memberData.paid_installments : 0;
   const isCompleted = memberData.status === "completed";
   const installmentProgress = hasInstallmentPlan ? (memberData.paid_installments / memberData.total_installments) * 100 : 0;

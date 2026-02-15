@@ -10,8 +10,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, FileDown } from "lucide-react";
 import { format } from "date-fns";
+import { exportToPDF, exportToExcel } from "@/lib/exportUtils";
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState<any[]>([]);
@@ -64,10 +65,21 @@ const Expenses = () => {
           <h1 className="page-title">Expenses</h1>
           <p className="page-description">Total: Rs. {total.toLocaleString()} across {expenses.length} entries</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Add Expense</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle className="font-heading">Record Expense</DialogTitle></DialogHeader>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => exportToPDF({
+            title: "Expenses Report", headers: ["Title", "Amount", "Date", "Description"],
+            rows: expenses.map((e) => [e.title, `Rs. ${Number(e.amount).toLocaleString()}`, format(new Date(e.expense_date), "dd MMM yyyy"), e.description || "—"]),
+            filename: "expenses-report",
+          })}><FileDown className="w-4 h-4 mr-1" />PDF</Button>
+          <Button variant="outline" size="sm" onClick={() => exportToExcel({
+            title: "Expenses", headers: ["Title", "Amount", "Date", "Description"],
+            rows: expenses.map((e) => [e.title, Number(e.amount), format(new Date(e.expense_date), "dd MMM yyyy"), e.description || "—"]),
+            filename: "expenses-report",
+          })}><FileDown className="w-4 h-4 mr-1" />Excel</Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Add Expense</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle className="font-heading">Record Expense</DialogTitle></DialogHeader>
             <form onSubmit={handleAdd} className="space-y-4">
               <div className="space-y-1.5"><Label>Title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required /></div>
               <div className="grid grid-cols-2 gap-3">
@@ -79,6 +91,7 @@ const Expenses = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
       <Card>
         <CardContent className="p-0">

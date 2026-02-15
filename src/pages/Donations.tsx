@@ -10,8 +10,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, FileDown } from "lucide-react";
 import { format } from "date-fns";
+import { exportToPDF, exportToExcel } from "@/lib/exportUtils";
 
 const Donations = () => {
   const [donations, setDonations] = useState<any[]>([]);
@@ -65,10 +66,21 @@ const Donations = () => {
           <h1 className="page-title">Donations</h1>
           <p className="page-description">Total: Rs. {total.toLocaleString()} from {donations.length} donations</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Add Donation</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle className="font-heading">Record Donation</DialogTitle></DialogHeader>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => exportToPDF({
+            title: "Donations Report", headers: ["Donor", "Contact", "Amount", "Date", "Description"],
+            rows: donations.map((d) => [d.donor_name, d.contact_number || "—", `Rs. ${Number(d.amount).toLocaleString()}`, format(new Date(d.donation_date), "dd MMM yyyy"), d.description || "—"]),
+            filename: "donations-report",
+          })}><FileDown className="w-4 h-4 mr-1" />PDF</Button>
+          <Button variant="outline" size="sm" onClick={() => exportToExcel({
+            title: "Donations", headers: ["Donor", "Contact", "Amount", "Date", "Description"],
+            rows: donations.map((d) => [d.donor_name, d.contact_number || "—", Number(d.amount), format(new Date(d.donation_date), "dd MMM yyyy"), d.description || "—"]),
+            filename: "donations-report",
+          })}><FileDown className="w-4 h-4 mr-1" />Excel</Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Add Donation</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle className="font-heading">Record Donation</DialogTitle></DialogHeader>
             <form onSubmit={handleAdd} className="space-y-4">
               <div className="space-y-1.5"><Label>Donor Name *</Label><Input value={form.donor_name} onChange={(e) => setForm({ ...form, donor_name: e.target.value })} required /></div>
               <div className="space-y-1.5"><Label>Contact Number</Label><Input value={form.contact_number} onChange={(e) => setForm({ ...form, contact_number: e.target.value })} /></div>
@@ -81,6 +93,7 @@ const Donations = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
       <Card>
         <CardContent className="p-0">

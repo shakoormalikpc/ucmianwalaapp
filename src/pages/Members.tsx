@@ -119,7 +119,7 @@ const Members = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>Membership Type</Label>
-                  <Select value={form.membership_type} onValueChange={(v: "annual" | "life") => setForm({ ...form, membership_type: v })}>
+                  <Select value={form.membership_type} onValueChange={(v: "annual" | "life") => setForm({ ...form, membership_type: v, installment_option: v === "life" ? form.installment_option : false, total_installments: v === "life" ? form.total_installments : 0 })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="annual">Annual (Rs. 1,000/yr)</SelectItem>
@@ -132,10 +132,12 @@ const Members = () => {
                   <Input type="date" value={form.membership_start_date} onChange={(e) => setForm({ ...form, membership_start_date: e.target.value })} />
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Switch checked={form.installment_option} onCheckedChange={(v) => setForm({ ...form, installment_option: v, total_installments: v ? 1 : 0 })} />
-                <Label>Installment Payment</Label>
-              </div>
+              {form.membership_type === "life" && (
+                <div className="flex items-center gap-3">
+                  <Switch checked={form.installment_option} onCheckedChange={(v) => setForm({ ...form, installment_option: v, total_installments: v ? 1 : 0 })} />
+                  <Label>Installment Payment (6 × Rs. 1,000/month)</Label>
+                </div>
+              )}
               {form.installment_option && (
                 <div className="space-y-1.5">
                   <Label>Total Installments</Label>

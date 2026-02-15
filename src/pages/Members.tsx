@@ -25,6 +25,7 @@ const Members = () => {
     full_name: "", father_name: "", phone: "", cnic: "", address: "",
     membership_type: "annual" as "annual" | "life",
     membership_start_date: new Date().toISOString().split("T")[0],
+    rafaqat_no: "",
     installment_option: false, notes: "",
   });
   const { user } = useAuth();
@@ -42,6 +43,7 @@ const Members = () => {
     if (!form.full_name.trim()) return;
     const { error } = await supabase.from("members").insert({
       ...form,
+      rafaqat_no: form.rafaqat_no || null,
       created_by: user?.id,
     });
     if (error) {
@@ -49,7 +51,7 @@ const Members = () => {
     } else {
       toast({ title: "Member added successfully" });
       setDialogOpen(false);
-      setForm({ full_name: "", father_name: "", phone: "", cnic: "", address: "", membership_type: "annual", membership_start_date: new Date().toISOString().split("T")[0], installment_option: false, notes: "" });
+      setForm({ full_name: "", father_name: "", phone: "", cnic: "", address: "", rafaqat_no: "", membership_type: "annual", membership_start_date: new Date().toISOString().split("T")[0], installment_option: false, notes: "" });
       fetchMembers();
     }
   };
@@ -93,17 +95,23 @@ const Members = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
+                  <Label>Rafaqat No.</Label>
+                  <Input value={form.rafaqat_no} onChange={(e) => setForm({ ...form, rafaqat_no: e.target.value })} placeholder="e.g. R-001" />
+                </div>
+                <div className="space-y-1.5">
                   <Label>Phone</Label>
                   <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>CNIC</Label>
                   <Input value={form.cnic} onChange={(e) => setForm({ ...form, cnic: e.target.value })} />
                 </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Address</Label>
-                <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+                <div className="space-y-1.5">
+                  <Label>Address</Label>
+                  <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
@@ -166,6 +174,7 @@ const Members = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Rafaqat No.</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Phone</TableHead>
                   <TableHead>Type</TableHead>
@@ -176,9 +185,10 @@ const Members = () => {
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No members found</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No members found</TableCell></TableRow>
                 ) : filtered.map((m) => (
                   <TableRow key={m.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedMember(m)}>
+                    <TableCell className="font-mono text-xs">{m.rafaqat_no || "—"}</TableCell>
                     <TableCell className="font-medium">{m.full_name}</TableCell>
                     <TableCell>{m.phone || "—"}</TableCell>
                     <TableCell className="capitalize">{m.membership_type}</TableCell>

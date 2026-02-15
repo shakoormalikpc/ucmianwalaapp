@@ -91,6 +91,7 @@ export type Database = {
           membership_type: Database["public"]["Enums"]["membership_type"]
           notes: string | null
           phone: string | null
+          rafaqat_no: string | null
           remaining_amount: number | null
           status: Database["public"]["Enums"]["member_status"]
           total_paid: number
@@ -110,6 +111,7 @@ export type Database = {
           membership_type: Database["public"]["Enums"]["membership_type"]
           notes?: string | null
           phone?: string | null
+          rafaqat_no?: string | null
           remaining_amount?: number | null
           status?: Database["public"]["Enums"]["member_status"]
           total_paid?: number
@@ -129,6 +131,7 @@ export type Database = {
           membership_type?: Database["public"]["Enums"]["membership_type"]
           notes?: string | null
           phone?: string | null
+          rafaqat_no?: string | null
           remaining_amount?: number | null
           status?: Database["public"]["Enums"]["member_status"]
           total_paid?: number

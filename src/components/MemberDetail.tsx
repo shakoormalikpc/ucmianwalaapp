@@ -80,6 +80,7 @@ const MemberDetail = ({ member, onBack }: Props) => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4 text-sm">
+              <div><span className="text-muted-foreground">Rafaqat No.:</span> {memberData.rafaqat_no || "—"}</div>
               <div><span className="text-muted-foreground">Father:</span> {memberData.father_name || "—"}</div>
               <div><span className="text-muted-foreground">Phone:</span> {memberData.phone || "—"}</div>
               <div><span className="text-muted-foreground">CNIC:</span> {memberData.cnic || "—"}</div>

@@ -11,22 +11,20 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 interface DashboardData {
   totalMembers: number;
-  annualMembers: number;
-  lifeMembers: number;
+  lifetimeMembers: number;
   totalPayments: number;
   totalDonations: number;
   totalExpenses: number;
   fundBalance: number;
-  pendingCount: number;
   recentMembers: any[];
   recentPayments: any[];
 }
 
 const Dashboard = () => {
   const [data, setData] = useState<DashboardData>({
-    totalMembers: 0, annualMembers: 0, lifeMembers: 0,
+    totalMembers: 0, lifetimeMembers: 0,
     totalPayments: 0, totalDonations: 0, totalExpenses: 0,
-    fundBalance: 0, pendingCount: 0, recentMembers: [], recentPayments: [],
+    fundBalance: 0, recentMembers: [], recentPayments: [],
   });
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [installmentMembers, setInstallmentMembers] = useState<any[]>([]);
@@ -66,11 +64,9 @@ const Dashboard = () => {
 
       setData({
         totalMembers: m.length,
-        annualMembers: m.filter((r) => r.membership_type === "annual").length,
-        lifeMembers: m.filter((r) => r.membership_type === "life").length,
+        lifetimeMembers: m.filter((r) => r.membership_type === "life" && r.status === "completed").length,
         totalPayments, totalDonations, totalExpenses,
         fundBalance: totalPayments + totalDonations - totalExpenses,
-        pendingCount: m.filter((r) => r.status === "pending_payment").length,
         recentMembers: recent.data || [],
         recentPayments: recentPay.data || [],
       });
@@ -144,17 +140,9 @@ const Dashboard = () => {
         <p className="page-description">Overview of UC membership and fund status</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <MetricCard title="Total Members" value={data.totalMembers} icon={Users} variant="primary" />
-        <MetricCard title="Annual Members" value={data.annualMembers} icon={UserCheck} />
-        <MetricCard title="Life Members" value={data.lifeMembers} icon={Crown} />
-        <MetricCard title="Pending Payments" value={data.pendingCount} icon={Clock} variant="warning" />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard title="Total Payments" value={fmt(data.totalPayments)} icon={CreditCard} variant="success" />
-        <MetricCard title="Total Donations" value={fmt(data.totalDonations)} icon={Heart} variant="info" />
-        <MetricCard title="Total Expenses" value={fmt(data.totalExpenses)} icon={Receipt} />
+        <MetricCard title="Lifetime Members" value={data.lifetimeMembers} icon={Crown} variant="success" />
         <MetricCard title="Fund Balance" value={fmt(data.fundBalance)} icon={Wallet} variant="primary" />
       </div>
 

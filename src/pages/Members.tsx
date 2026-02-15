@@ -142,14 +142,11 @@ const Members = () => {
                   <Select value={String(form.total_installments)} onValueChange={(v) => setForm({ ...form, total_installments: Number(v) })}>
                     <SelectTrigger><SelectValue placeholder="Select installments" /></SelectTrigger>
                     <SelectContent>
-                      {[1, 2, 3, 4, 5, 6].map((n) => {
-                        const amt = form.membership_type === "annual" ? 1000 : 6000;
-                        return (
+                      {[1, 2, 3, 4, 5, 6].map((n) => (
                           <SelectItem key={n} value={String(n)}>
-                            {n} Installment{n > 1 ? "s" : ""} — Rs. {Math.floor(amt / n).toLocaleString()}/month
+                            {n} Installment{n > 1 ? "s" : ""} — Rs. 1,000/month
                           </SelectItem>
-                        );
-                      })}
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>

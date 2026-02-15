@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, UserPlus } from "lucide-react";
+import { Plus, Search, UserPlus, Trash2 } from "lucide-react";
 import MemberDetail from "@/components/MemberDetail";
 
 const Members = () => {
@@ -79,6 +80,18 @@ const Members = () => {
     const matchStatus = filterStatus === "all" || m.status === filterStatus;
     return matchSearch && matchType && matchStatus;
   });
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await supabase.from("payments").delete().eq("member_id", id);
+    const { error } = await supabase.from("members").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Member deleted" });
+      fetchMembers();
+    }
+  };
 
   if (selectedMember) {
     return <MemberDetail member={selectedMember} onBack={() => { setSelectedMember(null); fetchMembers(); }} />;
@@ -214,12 +227,13 @@ const Members = () => {
                   <TableHead>Type</TableHead>
                   <TableHead>Paid</TableHead>
                   <TableHead>Remaining</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
+                   <TableHead>Status</TableHead>
+                   <TableHead className="w-12"></TableHead>
+                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No members found</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No members found</TableCell></TableRow>
                 ) : filtered.map((m) => (
                   <TableRow key={m.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedMember(m)}>
                     <TableCell className="font-mono text-xs">{m.rafaqat_no || "—"}</TableCell>
@@ -234,6 +248,25 @@ const Members = () => {
                         m.status === "active" ? "bg-info/10 text-info" :
                         "bg-accent/20 text-accent-foreground"
                       }`}>{m.status?.replace("_", " ")}</span>
+                    </TableCell>
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Member</AlertDialogTitle>
+                            <AlertDialogDescription>Are you sure you want to delete {m.full_name}? This will also delete all their payment records.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={(e) => handleDelete(m.id, e)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}

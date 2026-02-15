@@ -273,7 +273,7 @@ const MemberDetail = ({ member, onBack }: Props) => {
                   </div>
                   <div className="space-y-1.5">
                     <Label>Amount {hasInstallmentPlan ? `(Installment: Rs. ${installmentAmount.toLocaleString()})` : `(max Rs. ${Number(memberData.remaining_amount).toLocaleString()})`} *</Label>
-                    <Input type="number" min="1" max={memberData.remaining_amount} value={payForm.amount || (hasInstallmentPlan ? String(installmentAmount) : "")} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} required />
+                    <Input type="number" min="1" value={payForm.amount || (hasInstallmentPlan ? String(installmentAmount) : "")} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} required />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Payment Method</Label>

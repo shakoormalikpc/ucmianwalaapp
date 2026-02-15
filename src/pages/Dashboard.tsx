@@ -239,7 +239,7 @@ const Dashboard = () => {
                 ) : filteredInstallmentMembers.map((m) => (
                   <TableRow key={m.id} className={getRowColor(m)}>
                     <TableCell className="font-medium">{m.full_name}</TableCell>
-                    <TableCell className="capitalize">{m.membership_type}</TableCell>
+                    <TableCell>{m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual"}</TableCell>
                     <TableCell className="text-center">{m.total_installments || "—"}</TableCell>
                     <TableCell className="text-center">{m.paid_installments || "—"}</TableCell>
                     <TableCell className="text-center">

@@ -42,17 +42,31 @@ const Members = () => {
     e.preventDefault();
     if (!form.full_name.trim()) return;
     const { total_installments, ...rest } = form;
-    const { error } = await supabase.from("members").insert({
+    const isLifetimeFullPayment = rest.membership_type === "life" && !rest.installment_option;
+    const { data: newMember, error } = await supabase.from("members").insert({
       ...rest,
       rafaqat_no: rest.rafaqat_no || null,
       created_by: user?.id,
       total_installments: rest.installment_option ? total_installments : 0,
       paid_installments: 0,
-    } as any);
+      // Auto-complete lifetime full payment members
+      ...(isLifetimeFullPayment ? { total_paid: 6000, status: "completed" as const } : {}),
+    } as any).select().single();
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Member added successfully" });
+      // Auto-record the full payment for lifetime members
+      if (isLifetimeFullPayment && newMember) {
+        await supabase.from("payments").insert({
+          member_id: newMember.id,
+          amount: 6000,
+          payment_date: rest.membership_start_date,
+          payment_method: "Full Payment",
+          receipt_number: "",
+          created_by: user?.id,
+        });
+      }
+      toast({ title: "Member added successfully", description: isLifetimeFullPayment ? "Lifetime membership marked as fully paid" : undefined });
       setDialogOpen(false);
       setForm({ full_name: "", father_name: "", phone: "", cnic: "", address: "", rafaqat_no: "", membership_type: "annual", membership_start_date: new Date().toISOString().split("T")[0], installment_option: false, total_installments: 0, notes: "" });
       fetchMembers();
@@ -211,7 +225,7 @@ const Members = () => {
                     <TableCell className="font-mono text-xs">{m.rafaqat_no || "—"}</TableCell>
                     <TableCell className="font-medium">{m.full_name}</TableCell>
                     <TableCell>{m.phone || "—"}</TableCell>
-                    <TableCell className="capitalize">{m.membership_type}</TableCell>
+                    <TableCell>{m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual"}</TableCell>
                     <TableCell>Rs. {Number(m.total_paid).toLocaleString()}</TableCell>
                     <TableCell>Rs. {Number(m.remaining_amount).toLocaleString()}</TableCell>
                     <TableCell>

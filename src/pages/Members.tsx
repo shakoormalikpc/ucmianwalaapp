@@ -146,7 +146,7 @@ const Members = () => {
                         const amt = form.membership_type === "annual" ? 1000 : 6000;
                         return (
                           <SelectItem key={n} value={String(n)}>
-                            {n} Installment{n > 1 ? "s" : ""} — Rs. {Math.ceil(amt / n).toLocaleString()}/month
+                            {n} Installment{n > 1 ? "s" : ""} — Rs. {Math.floor(amt / n).toLocaleString()}/month
                           </SelectItem>
                         );
                       })}

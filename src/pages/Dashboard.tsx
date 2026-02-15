@@ -66,7 +66,7 @@ const Dashboard = () => {
         totalMembers: m.length,
         lifetimeMembers: m.filter((r) => r.membership_type === "life" && r.status === "completed").length,
         totalPayments, totalDonations, totalExpenses,
-        fundBalance: totalPayments + totalDonations - totalExpenses,
+        fundBalance: totalDonations - totalExpenses,
         recentMembers: recent.data || [],
         recentPayments: recentPay.data || [],
       });

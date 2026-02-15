@@ -154,93 +154,57 @@ const MemberDetail = ({ member, onBack }: Props) => {
         </Card>
       </div>
 
-      {/* Installment Plan Card */}
-      <Card className="mb-6">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <CardTitle className="font-heading text-base flex items-center gap-2">
-            <CalendarCheck className="w-4 h-4" />
-            Installment Plan
-          </CardTitle>
-          {!hasInstallmentPlan && !isCompleted && (
-            <Dialog open={installmentDialog} onOpenChange={setInstallmentDialog}>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="outline"><Plus className="w-4 h-4 mr-1" />Add Installment Plan</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Set Installment Plan</DialogTitle></DialogHeader>
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Total amount: <strong>Rs. {Number(memberData.total_required).toLocaleString()}</strong>
-                  </p>
-                  <div className="space-y-1.5">
-                    <Label>Select Total Installments</Label>
-                    <Select value={selectedInstallments} onValueChange={setSelectedInstallments}>
-                      <SelectTrigger><SelectValue placeholder="Select installments..." /></SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5, 6].map((n) => (
-                          <SelectItem key={n} value={String(n)}>
-                            {n} Installment{n > 1 ? "s" : ""} — Rs. {Math.ceil(Number(memberData.total_required) / n).toLocaleString()}/month
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+      {/* Installment Plan Card - only show for members with installment option */}
+      {memberData.installment_option && (
+        <Card className="mb-6">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardTitle className="font-heading text-base flex items-center gap-2">
+              <CalendarCheck className="w-4 h-4" />
+              Installment Plan
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {hasInstallmentPlan ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center p-3 bg-muted/50 rounded-lg">
+                    <p className="text-2xl font-bold">{memberData.total_installments}</p>
+                    <p className="text-xs text-muted-foreground">Total Installments</p>
                   </div>
-                  {selectedInstallments && (
-                    <div className="bg-muted/50 p-3 rounded-lg text-sm space-y-1">
-                      <div className="flex justify-between"><span>Total Amount:</span><span className="font-semibold">Rs. {Number(memberData.total_required).toLocaleString()}</span></div>
-                      <div className="flex justify-between"><span>Installments:</span><span className="font-semibold">{selectedInstallments}</span></div>
-                      <div className="flex justify-between"><span>Per Installment:</span><span className="font-semibold">Rs. 1,000</span></div>
-                    </div>
-                  )}
-                  <Button onClick={handleSetInstallmentPlan} disabled={!selectedInstallments} className="w-full">
-                    Set Installment Plan
-                  </Button>
+                  <div className="text-center p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
+                    <p className="text-2xl font-bold text-emerald-600">{memberData.paid_installments}</p>
+                    <p className="text-xs text-muted-foreground">Paid</p>
+                  </div>
+                  <div className="text-center p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
+                    <p className="text-2xl font-bold text-amber-600">{remainingInstallments}</p>
+                    <p className="text-xs text-muted-foreground">Remaining</p>
+                  </div>
                 </div>
-              </DialogContent>
-            </Dialog>
-          )}
-        </CardHeader>
-        <CardContent>
-          {hasInstallmentPlan ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-3 bg-muted/50 rounded-lg">
-                  <p className="text-2xl font-bold">{memberData.total_installments}</p>
-                  <p className="text-xs text-muted-foreground">Total Installments</p>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span>Progress</span>
+                    <span>{Math.round(installmentProgress)}%</span>
+                  </div>
+                  <Progress value={installmentProgress} className="h-3" />
                 </div>
-                <div className="text-center p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
-                  <p className="text-2xl font-bold text-emerald-600">{memberData.paid_installments}</p>
-                  <p className="text-xs text-muted-foreground">Paid</p>
-                </div>
-                <div className="text-center p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
-                  <p className="text-2xl font-bold text-amber-600">{remainingInstallments}</p>
-                  <p className="text-xs text-muted-foreground">Remaining</p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  Installment amount: <strong>Rs. {installmentAmount.toLocaleString()}</strong> per month
+                </p>
+                {isCompleted && (
+                  <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium">
+                    <Lock className="w-4 h-4" />
+                    All installments completed — no further payments needed
+                  </div>
+                )}
               </div>
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Progress</span>
-                  <span>{Math.round(installmentProgress)}%</span>
-                </div>
-                <Progress value={installmentProgress} className="h-3" />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Installment amount: <strong>Rs. {installmentAmount.toLocaleString()}</strong> per month
+            ) : (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                No installment plan configured.
               </p>
-              {isCompleted && (
-                <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium">
-                  <Lock className="w-4 h-4" />
-                  All installments completed — no further payments needed
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              {isCompleted ? "Payment completed — no installment plan needed" : "No installment plan set. Click \"Add Installment Plan\" to set one up."}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
@@ -253,7 +217,7 @@ const MemberDetail = ({ member, onBack }: Props) => {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>
-                    Record Payment {hasInstallmentPlan ? `— Installment ${(memberData.paid_installments || 0) + 1} of ${memberData.total_installments}` : ""}
+                    Record Payment {hasInstallmentPlan ? `— Installment ${(memberData.paid_installments || 0) + 1} of ${memberData.total_installments}` : `— Rs. ${Number(memberData.remaining_amount).toLocaleString()} remaining`}
                   </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handlePayment} className="space-y-4">

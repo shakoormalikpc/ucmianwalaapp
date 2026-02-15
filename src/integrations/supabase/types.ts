@@ -90,10 +90,12 @@ export type Database = {
           membership_start_date: string
           membership_type: Database["public"]["Enums"]["membership_type"]
           notes: string | null
+          paid_installments: number | null
           phone: string | null
           rafaqat_no: string | null
           remaining_amount: number | null
           status: Database["public"]["Enums"]["member_status"]
+          total_installments: number | null
           total_paid: number
           total_required: number
           updated_at: string
@@ -110,10 +112,12 @@ export type Database = {
           membership_start_date?: string
           membership_type: Database["public"]["Enums"]["membership_type"]
           notes?: string | null
+          paid_installments?: number | null
           phone?: string | null
           rafaqat_no?: string | null
           remaining_amount?: number | null
           status?: Database["public"]["Enums"]["member_status"]
+          total_installments?: number | null
           total_paid?: number
           total_required?: number
           updated_at?: string
@@ -130,10 +134,12 @@ export type Database = {
           membership_start_date?: string
           membership_type?: Database["public"]["Enums"]["membership_type"]
           notes?: string | null
+          paid_installments?: number | null
           phone?: string | null
           rafaqat_no?: string | null
           remaining_amount?: number | null
           status?: Database["public"]["Enums"]["member_status"]
+          total_installments?: number | null
           total_paid?: number
           total_required?: number
           updated_at?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.payments ALTER COLUMN receipt_number SET DEFAULT '';

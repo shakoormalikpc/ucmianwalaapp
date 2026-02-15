@@ -88,10 +88,10 @@ const MemberDetail = ({ member, onBack }: Props) => {
       const newPaid = memberData.paid_installments + 1;
       await supabase.from("members").update({
         paid_installments: newPaid,
-      }).eq("id", member.id);
+      } as any).eq("id", member.id);
     }
 
-    toast({ title: "Payment recorded" });
+    toast({ title: "Payment recorded", description: `Installment ${(memberData.paid_installments || 0) + 1} of ${memberData.total_installments} paid on ${payForm.payment_date}` });
     setPayDialog(false);
     setPayForm({ amount: "", payment_date: new Date().toISOString().split("T")[0], payment_method: "", remarks: "" });
     fetchPayments();
@@ -103,7 +103,7 @@ const MemberDetail = ({ member, onBack }: Props) => {
     : "Lifetime";
 
   const hasInstallmentPlan = memberData.total_installments > 0;
-  const installmentAmount = hasInstallmentPlan ? Math.ceil(Number(memberData.total_required) / memberData.total_installments) : 0;
+  const installmentAmount = hasInstallmentPlan ? Math.floor(Number(memberData.total_required) / memberData.total_installments) : 0;
   const remainingInstallments = hasInstallmentPlan ? memberData.total_installments - memberData.paid_installments : 0;
   const isCompleted = memberData.status === "completed";
   const installmentProgress = hasInstallmentPlan ? (memberData.paid_installments / memberData.total_installments) * 100 : 0;
@@ -256,15 +256,24 @@ const MemberDetail = ({ member, onBack }: Props) => {
                 <Button size="sm"><Plus className="w-4 h-4 mr-1" />Add Payment</Button>
               </DialogTrigger>
               <DialogContent>
-                <DialogHeader><DialogTitle>Record Payment</DialogTitle></DialogHeader>
+                <DialogHeader>
+                  <DialogTitle>
+                    Record Payment {hasInstallmentPlan ? `— Installment ${(memberData.paid_installments || 0) + 1} of ${memberData.total_installments}` : ""}
+                  </DialogTitle>
+                </DialogHeader>
                 <form onSubmit={handlePayment} className="space-y-4">
+                  {hasInstallmentPlan && (
+                    <div className="bg-muted/50 p-3 rounded-lg text-sm">
+                      <p>Installment Amount: <strong>Rs. {installmentAmount.toLocaleString()}</strong></p>
+                    </div>
+                  )}
                   <div className="space-y-1.5">
-                    <Label>Amount (max Rs. {Number(memberData.remaining_amount).toLocaleString()}) *</Label>
-                    <Input type="number" min="1" max={memberData.remaining_amount} value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} required />
+                    <Label>Payment Date *</Label>
+                    <Input type="date" value={payForm.payment_date} onChange={(e) => setPayForm({ ...payForm, payment_date: e.target.value })} required />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Payment Date</Label>
-                    <Input type="date" value={payForm.payment_date} onChange={(e) => setPayForm({ ...payForm, payment_date: e.target.value })} />
+                    <Label>Amount {hasInstallmentPlan ? `(Installment: Rs. ${installmentAmount.toLocaleString()})` : `(max Rs. ${Number(memberData.remaining_amount).toLocaleString()})`} *</Label>
+                    <Input type="number" min="1" max={memberData.remaining_amount} value={payForm.amount || (hasInstallmentPlan ? String(installmentAmount) : "")} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} required />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Payment Method</Label>

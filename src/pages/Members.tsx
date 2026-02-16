@@ -9,10 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, UserPlus, Trash2, FileDown } from "lucide-react";
+import { Search, UserPlus, Trash2, FileDown } from "lucide-react";
 import MemberDetail from "@/components/MemberDetail";
 import { exportToPDF, exportToExcel } from "@/lib/exportUtils";
 
@@ -26,9 +25,10 @@ const Members = () => {
   const [form, setForm] = useState({
     full_name: "", father_name: "", phone: "", cnic: "", address: "",
     membership_type: "annual" as "annual" | "life",
+    payment_mode: "full" as "full" | "installment",
     membership_start_date: new Date().toISOString().split("T")[0],
     rafaqat_no: "",
-    installment_option: false, total_installments: 0, notes: "",
+    total_installments: 6, notes: "",
   });
   const { user } = useAuth();
   const { toast } = useToast();
@@ -40,37 +40,65 @@ const Members = () => {
 
   useEffect(() => { fetchMembers(); }, []);
 
+  const resetForm = () => setForm({
+    full_name: "", father_name: "", phone: "", cnic: "", address: "",
+    membership_type: "annual", payment_mode: "full",
+    membership_start_date: new Date().toISOString().split("T")[0],
+    rafaqat_no: "", total_installments: 6, notes: "",
+  });
+
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.full_name.trim()) return;
-    const { total_installments, ...rest } = form;
-    const isLifetimeFullPayment = rest.membership_type === "life" && !rest.installment_option;
+
+    const isInstallment = form.membership_type === "life" && form.payment_mode === "installment";
+    const isLifetimeFullPayment = form.membership_type === "life" && form.payment_mode === "full";
+
+    const remainingAmount = isLifetimeFullPayment ? 0 :
+      form.membership_type === "annual" ? 1000 :
+      isInstallment ? 6000 : 6000;
+
     const { data: newMember, error } = await supabase.from("members").insert({
-      ...rest,
-      rafaqat_no: rest.rafaqat_no || null,
-      created_by: user?.id,
-      total_installments: rest.installment_option ? total_installments : 0,
+      full_name: form.full_name,
+      father_name: form.father_name || null,
+      phone: form.phone || null,
+      cnic: form.cnic || null,
+      address: form.address || null,
+      rafaqat_no: form.rafaqat_no || null,
+      membership_type: form.membership_type,
+      membership_start_date: form.membership_start_date,
+      installment_option: isInstallment,
+      total_installments: isInstallment ? form.total_installments : 0,
       paid_installments: 0,
-      // Auto-complete lifetime full payment members
-      ...(isLifetimeFullPayment ? { total_paid: 6000, status: "completed" as const } : {}),
+      remaining_amount: remainingAmount,
+      notes: form.notes || null,
+      created_by: user?.id,
+      ...(isLifetimeFullPayment ? { total_paid: 6000, status: "completed" as const, remaining_amount: 0 } : {}),
     } as any).select().single();
+
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      // Auto-record the full payment for lifetime members
       if (isLifetimeFullPayment && newMember) {
         await supabase.from("payments").insert({
           member_id: newMember.id,
           amount: 6000,
-          payment_date: rest.membership_start_date,
+          payment_date: form.membership_start_date,
           payment_method: "Full Payment",
           receipt_number: "",
           created_by: user?.id,
         });
       }
-      toast({ title: "Member added successfully", description: isLifetimeFullPayment ? "Lifetime membership marked as fully paid" : undefined });
+      toast({
+        title: "Member added successfully",
+        description: isLifetimeFullPayment
+          ? "Lifetime membership marked as fully paid"
+          : isInstallment
+          ? `Installment plan: ${form.total_installments} × Rs. 1,000/month`
+          : undefined,
+      });
       setDialogOpen(false);
-      setForm({ full_name: "", father_name: "", phone: "", cnic: "", address: "", rafaqat_no: "", membership_type: "annual", membership_start_date: new Date().toISOString().split("T")[0], installment_option: false, total_installments: 0, notes: "" });
+      resetForm();
       fetchMembers();
     }
   };
@@ -105,15 +133,14 @@ const Members = () => {
           <h1 className="page-title">Members</h1>
           <p className="page-description">{members.length} total members</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => {
-            const config = {
+            exportToPDF({
               title: "Members Report",
               headers: ["Rafaqat No.", "Name", "Phone", "Type", "Paid", "Remaining", "Status"],
               rows: filtered.map((m) => [m.rafaqat_no || "—", m.full_name, m.phone || "—", m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual", `Rs. ${Number(m.total_paid).toLocaleString()}`, `Rs. ${Number(m.remaining_amount).toLocaleString()}`, m.status?.replace("_", " ")]),
               filename: "members-report",
-            };
-            exportToPDF(config);
+            });
           }}><FileDown className="w-4 h-4 mr-1" />PDF</Button>
           <Button variant="outline" size="sm" onClick={() => {
             exportToExcel({
@@ -127,113 +154,127 @@ const Members = () => {
             <DialogTrigger asChild>
               <Button><UserPlus className="w-4 h-4 mr-2" />Add Member</Button>
             </DialogTrigger>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="font-heading">Add New Member</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleAdd} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="font-heading">Add New Member</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleAdd} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Full Name *</Label>
+                    <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Father Name</Label>
+                    <Input value={form.father_name} onChange={(e) => setForm({ ...form, father_name: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Rafaqat No.</Label>
+                    <Input value={form.rafaqat_no} onChange={(e) => setForm({ ...form, rafaqat_no: e.target.value })} placeholder="e.g. R-001" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Phone</Label>
+                    <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>CNIC</Label>
+                    <Input value={form.cnic} onChange={(e) => setForm({ ...form, cnic: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Address</Label>
+                    <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Membership Type</Label>
+                    <Select value={form.membership_type} onValueChange={(v: "annual" | "life") => setForm({ ...form, membership_type: v, payment_mode: "full", total_installments: 6 })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="annual">Annual (Rs. 1,000/yr)</SelectItem>
+                        <SelectItem value="life">Life (Rs. 6,000)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Start Date</Label>
+                    <Input type="date" value={form.membership_start_date} onChange={(e) => setForm({ ...form, membership_start_date: e.target.value })} />
+                  </div>
+                </div>
+
+                {form.membership_type === "life" && (
+                  <div className="space-y-3 rounded-lg border border-border p-3 bg-muted/30">
+                    <Label className="text-sm font-semibold">Payment Mode</Label>
+                    <Select value={form.payment_mode} onValueChange={(v: "full" | "installment") => setForm({ ...form, payment_mode: v, total_installments: v === "installment" ? 6 : 0 })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="full">Full Payment (Rs. 6,000 at once)</SelectItem>
+                        <SelectItem value="installment">Installment (Rs. 1,000/month)</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {form.payment_mode === "installment" && (
+                      <div className="space-y-1.5">
+                        <Label>Number of Installments</Label>
+                        <Select value={String(form.total_installments)} onValueChange={(v) => setForm({ ...form, total_installments: Number(v) })}>
+                          <SelectTrigger><SelectValue placeholder="Select installments" /></SelectTrigger>
+                          <SelectContent>
+                            {[1, 2, 3, 4, 5, 6].map((n) => (
+                              <SelectItem key={n} value={String(n)}>
+                                {n} × Rs. 1,000 = Rs. {(n * 1000).toLocaleString()}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Total: Rs. {(form.total_installments * 1000).toLocaleString()} of Rs. 6,000 — Remaining: Rs. {(6000 - form.total_installments * 1000).toLocaleString()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="space-y-1.5">
-                  <Label>Full Name *</Label>
-                  <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
+                  <Label>Notes</Label>
+                  <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} />
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Father Name</Label>
-                  <Input value={form.father_name} onChange={(e) => setForm({ ...form, father_name: e.target.value })} />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Rafaqat No.</Label>
-                  <Input value={form.rafaqat_no} onChange={(e) => setForm({ ...form, rafaqat_no: e.target.value })} placeholder="e.g. R-001" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Phone</Label>
-                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>CNIC</Label>
-                  <Input value={form.cnic} onChange={(e) => setForm({ ...form, cnic: e.target.value })} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Address</Label>
-                  <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Membership Type</Label>
-                  <Select value={form.membership_type} onValueChange={(v: "annual" | "life") => setForm({ ...form, membership_type: v, installment_option: v === "life" ? form.installment_option : false, total_installments: v === "life" ? form.total_installments : 0 })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="annual">Annual (Rs. 1,000/yr)</SelectItem>
-                      <SelectItem value="life">Life (Rs. 6,000)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Start Date</Label>
-                  <Input type="date" value={form.membership_start_date} onChange={(e) => setForm({ ...form, membership_start_date: e.target.value })} />
-                </div>
-              </div>
-              {form.membership_type === "life" && (
-                <div className="flex items-center gap-3">
-                  <Switch checked={form.installment_option} onCheckedChange={(v) => setForm({ ...form, installment_option: v, total_installments: v ? 1 : 0 })} />
-                  <Label>Installment Payment (6 × Rs. 1,000/month)</Label>
-                </div>
-              )}
-              {form.installment_option && (
-                <div className="space-y-1.5">
-                  <Label>Total Installments</Label>
-                  <Select value={String(form.total_installments)} onValueChange={(v) => setForm({ ...form, total_installments: Number(v) })}>
-                    <SelectTrigger><SelectValue placeholder="Select installments" /></SelectTrigger>
-                    <SelectContent>
-                      {[1, 2, 3, 4, 5, 6].map((n) => (
-                          <SelectItem key={n} value={String(n)}>
-                            {n} Installment{n > 1 ? "s" : ""} — Rs. 1,000/month
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-              <div className="space-y-1.5">
-                <Label>Notes</Label>
-                <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} />
-              </div>
-              <Button type="submit" className="w-full">Add Member</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <Button type="submit" className="w-full">Add Member</Button>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Search by name, phone, or CNIC..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
             </div>
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-40"><SelectValue placeholder="Type" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="annual">Annual</SelectItem>
-                <SelectItem value="life">Life</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending_payment">Pending</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Type" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="annual">Annual</SelectItem>
+                  <SelectItem value="life">Life</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending_payment">Pending</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -243,13 +284,13 @@ const Members = () => {
                 <TableRow>
                   <TableHead>Rafaqat No.</TableHead>
                   <TableHead>Name</TableHead>
-                  <TableHead>Phone</TableHead>
+                  <TableHead className="hidden sm:table-cell">Phone</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Paid</TableHead>
-                  <TableHead>Remaining</TableHead>
-                   <TableHead>Status</TableHead>
-                   <TableHead className="w-12"></TableHead>
-                 </TableRow>
+                  <TableHead className="hidden sm:table-cell">Remaining</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="w-12"></TableHead>
+                </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
@@ -258,10 +299,10 @@ const Members = () => {
                   <TableRow key={m.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedMember(m)}>
                     <TableCell className="font-mono text-xs">{m.rafaqat_no || "—"}</TableCell>
                     <TableCell className="font-medium">{m.full_name}</TableCell>
-                    <TableCell>{m.phone || "—"}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{m.phone || "—"}</TableCell>
                     <TableCell>{m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual"}</TableCell>
                     <TableCell>Rs. {Number(m.total_paid).toLocaleString()}</TableCell>
-                    <TableCell>Rs. {Number(m.remaining_amount).toLocaleString()}</TableCell>
+                    <TableCell className="hidden sm:table-cell">Rs. {Number(m.remaining_amount).toLocaleString()}</TableCell>
                     <TableCell>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                         m.status === "completed" ? "bg-success/10 text-success" :

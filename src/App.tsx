@@ -11,6 +11,7 @@ import Payments from "./pages/Payments";
 import Donations from "./pages/Donations";
 import Expenses from "./pages/Expenses";
 import Reports from "./pages/Reports";
+import Designations from "./pages/Designations";
 import AppLayout from "./components/AppLayout";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/donations" element={<Donations />} />
               <Route path="/expenses" element={<Expenses />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/designations" element={<Designations />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

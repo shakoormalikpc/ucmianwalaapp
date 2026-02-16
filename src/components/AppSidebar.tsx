@@ -9,6 +9,7 @@ import {
   BarChart3,
   LogOut,
   Shield,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ const navItems = [
   { icon: Heart, label: "Donations", path: "/donations" },
   { icon: Receipt, label: "Expenses", path: "/expenses" },
   { icon: BarChart3, label: "Reports", path: "/reports" },
+  { icon: Award, label: "Designations", path: "/designations" },
 ];
 
 const AppSidebar = () => {
@@ -34,7 +36,7 @@ const AppSidebar = () => {
             <Shield className="w-5 h-5 text-sidebar-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-heading font-bold text-sm text-sidebar-foreground">UC Management</h1>
+            <h1 className="font-heading font-bold text-sm text-sidebar-foreground">TMQ Mianwala</h1>
             <p className="text-[11px] text-sidebar-foreground/50 capitalize">{role}</p>
           </div>
         </div>

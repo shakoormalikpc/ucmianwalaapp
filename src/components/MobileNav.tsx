@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  LayoutDashboard, Users, CreditCard, Heart, Receipt, BarChart3, LogOut, Shield, Menu,
+  LayoutDashboard, Users, CreditCard, Heart, Receipt, BarChart3, LogOut, Shield, Menu, Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -14,6 +14,7 @@ const navItems = [
   { icon: Heart, label: "Donations", path: "/donations" },
   { icon: Receipt, label: "Expenses", path: "/expenses" },
   { icon: BarChart3, label: "Reports", path: "/reports" },
+  { icon: Award, label: "Designations", path: "/designations" },
 ];
 
 const MobileNav = () => {
@@ -23,10 +24,10 @@ const MobileNav = () => {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="lg:hidden flex items-center justify-between bg-sidebar px-4 py-3">
+    <header className="lg:hidden sticky top-0 z-50 flex items-center justify-between bg-sidebar px-4 py-3">
       <div className="flex items-center gap-2">
         <Shield className="w-5 h-5 text-sidebar-primary" />
-        <span className="font-heading font-bold text-sm text-sidebar-foreground">UC Management</span>
+        <span className="font-heading font-bold text-sm text-sidebar-foreground">TMQ Mianwala</span>
       </div>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
@@ -39,7 +40,7 @@ const MobileNav = () => {
                 <Shield className="w-5 h-5 text-sidebar-primary-foreground" />
               </div>
               <div>
-                <h1 className="font-heading font-bold text-sm text-sidebar-foreground">UC Management</h1>
+                <h1 className="font-heading font-bold text-sm text-sidebar-foreground">TMQ Mianwala</h1>
                 <p className="text-[11px] text-sidebar-foreground/50 capitalize">{role}</p>
               </div>
             </div>

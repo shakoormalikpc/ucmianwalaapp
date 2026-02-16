@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Eye, EyeOff, Users, Loader2 } from "lucide-react";
+import { Shield, Eye, EyeOff, Users, Loader2, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -31,6 +31,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
+  const [showDesignations, setShowDesignations] = useState(false);
   const [members, setMembers] = useState<PublicMember[]>([]);
   const [membersLoading, setMembersLoading] = useState(false);
   const { signIn } = useAuth();
@@ -89,8 +90,8 @@ const Login = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent mb-4">
             <Shield className="w-8 h-8 text-accent-foreground" />
           </div>
-          <h1 className="text-2xl font-heading font-bold text-primary-foreground">
-            UC Management System
+           <h1 className="text-2xl font-heading font-bold text-primary-foreground">
+            TMQ Mianwala Management
           </h1>
           <p className="text-primary-foreground/60 text-sm mt-1">
             Membership & Fund Management
@@ -140,7 +141,7 @@ const Login = () => {
               </Button>
             </form>
 
-            <div className="mt-4 pt-4 border-t">
+            <div className="mt-4 pt-4 border-t space-y-2">
               <Button
                 variant="outline"
                 className="w-full gap-2"
@@ -148,6 +149,14 @@ const Login = () => {
               >
                 <Users className="w-4 h-4" />
                 View Members List
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => setShowDesignations(true)}
+              >
+                <Award className="w-4 h-4" />
+                View Team Designations
               </Button>
             </div>
           </CardContent>
@@ -216,6 +225,43 @@ const Login = () => {
               </Table>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDesignations} onOpenChange={setShowDesignations}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Award className="w-5 h-5 text-primary" />
+              Team Designations
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">Leadership team of TMQ UC Mianwala</p>
+          </DialogHeader>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              { no: 1, name: "Tauqeer Aslam", designation: "President (Saddar)", role: "president" },
+              { no: 2, name: "Muhammad Ghalib", designation: "Nazim (General Secretary)", role: "nazim" },
+              { no: 3, name: "Abdul Shakoor", designation: "Nazim Markaz-e-Ilm (Knowledge Center)", role: "nazim" },
+              { no: 4, name: "Muhammad Shoaib", designation: "Nazim Finance & Membership", role: "nazim" },
+              { no: 5, name: "Muhammad Rizwan Ahmed", designation: "Nazim Dawat-o-Tarbiyat (Outreach & Training)", role: "nazim" },
+              { no: 6, name: "Raheel-ur-Rehman", designation: "Nazim Halqa-e-Durood (Durood Circle)", role: "nazim" },
+              { no: 7, name: "Jalal Aslam", designation: "Nazim Social Media", role: "nazim" },
+              { no: 8, name: "Muhammad Mashkoor", designation: "Deputy Nazim Social Media", role: "nazim" },
+            ].map((m) => (
+              <div key={m.no} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs shrink-0">
+                  {m.no}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-medium text-sm truncate">{m.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{m.designation}</p>
+                </div>
+                <Badge variant={m.role === "president" ? "default" : "secondary"} className={`ml-auto shrink-0 text-[10px] ${m.role === "president" ? "bg-accent text-accent-foreground" : ""}`}>
+                  {m.role === "president" ? "President" : "Nazim"}
+                </Badge>
+              </div>
+            ))}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

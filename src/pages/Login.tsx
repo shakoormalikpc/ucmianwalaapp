@@ -68,7 +68,11 @@ const Login = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge variant="default" className="bg-accent text-accent-foreground">Completed</Badge>;
+        return (
+          <Badge variant="default" className="bg-accent text-accent-foreground">
+            Completed
+          </Badge>
+        );
       case "pending_payment":
         return <Badge variant="secondary">Pending</Badge>;
       default:
@@ -90,12 +94,8 @@ const Login = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent mb-4">
             <Shield className="w-8 h-8 text-accent-foreground" />
           </div>
-           <h1 className="text-2xl font-heading font-bold text-primary-foreground">
-            TMQ Mianwala Management
-          </h1>
-          <p className="text-primary-foreground/60 text-sm mt-1">
-            Membership & Fund Management
-          </p>
+          <h1 className="text-2xl font-heading font-bold text-primary-foreground">TMQ Mianwala Management</h1>
+          <p className="text-primary-foreground/60 text-sm mt-1">Membership & Fund Management</p>
         </div>
 
         <Card className="border-0 shadow-2xl">
@@ -142,19 +142,11 @@ const Login = () => {
             </form>
 
             <div className="mt-4 pt-4 border-t space-y-2">
-              <Button
-                variant="outline"
-                className="w-full gap-2"
-                onClick={handleShowMembers}
-              >
+              <Button variant="outline" className="w-full gap-2" onClick={handleShowMembers}>
                 <Users className="w-4 h-4" />
                 View Members List
               </Button>
-              <Button
-                variant="outline"
-                className="w-full gap-2"
-                onClick={() => setShowDesignations(true)}
-              >
+              <Button variant="outline" className="w-full gap-2" onClick={() => setShowDesignations(true)}>
                 <Award className="w-4 h-4" />
                 View Team Designations
               </Button>
@@ -184,9 +176,7 @@ const Login = () => {
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
           ) : members.length === 0 ? (
-            <div className="text-center py-16 text-muted-foreground">
-              No members found
-            </div>
+            <div className="text-center py-16 text-muted-foreground">No members found</div>
           ) : (
             <div className="overflow-auto flex-1 rounded-lg border">
               <Table>
@@ -217,7 +207,9 @@ const Login = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>{getStatusBadge(m.status)}</TableCell>
-                      <TableCell className="text-right font-medium">Rs. {Number(m.total_paid).toLocaleString()}</TableCell>
+                      <TableCell className="text-right font-medium">
+                        Rs. {Number(m.total_paid).toLocaleString()}
+                      </TableCell>
                       <TableCell className="text-right">Rs. {Number(m.total_required).toLocaleString()}</TableCell>
                     </TableRow>
                   ))}
@@ -240,10 +232,15 @@ const Login = () => {
           <div className="grid gap-3 sm:grid-cols-2">
             {[
               { no: 1, name: "Tauqeer Aslam", designation: "President (Saddar)", role: "president" },
-              { no: 2, name: "Muhammad Ghalib", designation: "Nazim (General Secretary)", role: "nazim" },
+              { no: 2, name: "Muhammad Aqib", designation: "Nazim (General Secretary)", role: "nazim" },
               { no: 3, name: "Abdul Shakoor", designation: "Nazim Markaz-e-Ilm (Knowledge Center)", role: "nazim" },
               { no: 4, name: "Muhammad Shoaib", designation: "Nazim Finance & Membership", role: "nazim" },
-              { no: 5, name: "Muhammad Rizwan Ahmed", designation: "Nazim Dawat-o-Tarbiyat (Outreach & Training)", role: "nazim" },
+              {
+                no: 5,
+                name: "Muhammad Rizwan Ahmed",
+                designation: "Nazim Dawat-o-Tarbiyat (Outreach & Training)",
+                role: "nazim",
+              },
               { no: 6, name: "Raheel-ur-Rehman", designation: "Nazim Halqa-e-Durood (Durood Circle)", role: "nazim" },
               { no: 7, name: "Jalal Aslam", designation: "Nazim Social Media", role: "nazim" },
               { no: 8, name: "Muhammad Mashkoor", designation: "Deputy Nazim Social Media", role: "nazim" },
@@ -256,7 +253,10 @@ const Login = () => {
                   <p className="font-medium text-sm truncate">{m.name}</p>
                   <p className="text-xs text-muted-foreground truncate">{m.designation}</p>
                 </div>
-                <Badge variant={m.role === "president" ? "default" : "secondary"} className={`ml-auto shrink-0 text-[10px] ${m.role === "president" ? "bg-accent text-accent-foreground" : ""}`}>
+                <Badge
+                  variant={m.role === "president" ? "default" : "secondary"}
+                  className={`ml-auto shrink-0 text-[10px] ${m.role === "president" ? "bg-accent text-accent-foreground" : ""}`}
+                >
                   {m.role === "president" ? "President" : "Nazim"}
                 </Badge>
               </div>

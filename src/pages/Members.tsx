@@ -24,8 +24,7 @@ const Members = () => {
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [form, setForm] = useState({
     full_name: "", father_name: "", phone: "", cnic: "", address: "",
-    membership_type: "annual" as "annual" | "life",
-    payment_mode: "full" as "full" | "installment",
+    member_type: "lifetime" as "lifetime" | "installment",
     membership_start_date: new Date().toISOString().split("T")[0],
     rafaqat_no: "",
     total_installments: 6, notes: "",
@@ -42,7 +41,7 @@ const Members = () => {
 
   const resetForm = () => setForm({
     full_name: "", father_name: "", phone: "", cnic: "", address: "",
-    membership_type: "annual", payment_mode: "full",
+    member_type: "lifetime",
     membership_start_date: new Date().toISOString().split("T")[0],
     rafaqat_no: "", total_installments: 6, notes: "",
   });
@@ -51,12 +50,10 @@ const Members = () => {
     e.preventDefault();
     if (!form.full_name.trim()) return;
 
-    const isInstallment = form.membership_type === "life" && form.payment_mode === "installment";
-    const isLifetimeFullPayment = form.membership_type === "life" && form.payment_mode === "full";
+    const isInstallment = form.member_type === "installment";
+    const isLifetime = form.member_type === "lifetime";
 
-    const remainingAmount = isLifetimeFullPayment ? 0 :
-      form.membership_type === "annual" ? 1000 :
-      isInstallment ? 6000 : 6000;
+    const remainingAmount = isLifetime ? 0 : 6000;
 
     const { data: newMember, error } = await supabase.from("members").insert({
       full_name: form.full_name,
@@ -65,7 +62,7 @@ const Members = () => {
       cnic: form.cnic || null,
       address: form.address || null,
       rafaqat_no: form.rafaqat_no || null,
-      membership_type: form.membership_type,
+      membership_type: "life" as const,
       membership_start_date: form.membership_start_date,
       installment_option: isInstallment,
       total_installments: isInstallment ? form.total_installments : 0,
@@ -73,13 +70,13 @@ const Members = () => {
       remaining_amount: remainingAmount,
       notes: form.notes || null,
       created_by: user?.id,
-      ...(isLifetimeFullPayment ? { total_paid: 6000, status: "completed" as const, remaining_amount: 0 } : {}),
+      ...(isLifetime ? { total_paid: 6000, status: "completed" as const, remaining_amount: 0 } : {}),
     } as any).select().single();
 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      if (isLifetimeFullPayment && newMember) {
+      if (isLifetime && newMember) {
         await supabase.from("payments").insert({
           member_id: newMember.id,
           amount: 6000,
@@ -91,11 +88,9 @@ const Members = () => {
       }
       toast({
         title: "Member added successfully",
-        description: isLifetimeFullPayment
+        description: isLifetime
           ? "Lifetime membership marked as fully paid"
-          : isInstallment
-          ? `Installment plan: ${form.total_installments} × Rs. 1,000/month`
-          : undefined,
+          : `Installment plan: ${form.total_installments} × Rs. 1,000/month`,
       });
       setDialogOpen(false);
       resetForm();
@@ -192,11 +187,11 @@ const Members = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>Membership Type</Label>
-                    <Select value={form.membership_type} onValueChange={(v: "annual" | "life") => setForm({ ...form, membership_type: v, payment_mode: "full", total_installments: 6 })}>
+                    <Select value={form.member_type} onValueChange={(v: "lifetime" | "installment") => setForm({ ...form, member_type: v, total_installments: v === "installment" ? 6 : 0 })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="annual">Annual (Rs. 1,000/yr)</SelectItem>
-                        <SelectItem value="life">Life (Rs. 6,000)</SelectItem>
+                        <SelectItem value="lifetime">Lifetime (Rs. 6,000)</SelectItem>
+                        <SelectItem value="installment">Installment (Rs. 1,000/month)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -206,35 +201,22 @@ const Members = () => {
                   </div>
                 </div>
 
-                {form.membership_type === "life" && (
+                {form.member_type === "installment" && (
                   <div className="space-y-3 rounded-lg border border-border p-3 bg-muted/30">
-                    <Label className="text-sm font-semibold">Payment Mode</Label>
-                    <Select value={form.payment_mode} onValueChange={(v: "full" | "installment") => setForm({ ...form, payment_mode: v, total_installments: v === "installment" ? 6 : 0 })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Label className="text-sm font-semibold">Number of Installments</Label>
+                    <Select value={String(form.total_installments)} onValueChange={(v) => setForm({ ...form, total_installments: Number(v) })}>
+                      <SelectTrigger><SelectValue placeholder="Select installments" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="full">Full Payment (Rs. 6,000 at once)</SelectItem>
-                        <SelectItem value="installment">Installment (Rs. 1,000/month)</SelectItem>
+                        {[1, 2, 3, 4, 5, 6].map((n) => (
+                          <SelectItem key={n} value={String(n)}>
+                            {n} × Rs. 1,000 = Rs. {(n * 1000).toLocaleString()}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-
-                    {form.payment_mode === "installment" && (
-                      <div className="space-y-1.5">
-                        <Label>Number of Installments</Label>
-                        <Select value={String(form.total_installments)} onValueChange={(v) => setForm({ ...form, total_installments: Number(v) })}>
-                          <SelectTrigger><SelectValue placeholder="Select installments" /></SelectTrigger>
-                          <SelectContent>
-                            {[1, 2, 3, 4, 5, 6].map((n) => (
-                              <SelectItem key={n} value={String(n)}>
-                                {n} × Rs. 1,000 = Rs. {(n * 1000).toLocaleString()}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground">
-                          Total: Rs. {(form.total_installments * 1000).toLocaleString()} of Rs. 6,000 — Remaining: Rs. {(6000 - form.total_installments * 1000).toLocaleString()}
-                        </p>
-                      </div>
-                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Total: Rs. {(form.total_installments * 1000).toLocaleString()} of Rs. 6,000 — Remaining: Rs. {(6000 - form.total_installments * 1000).toLocaleString()}
+                    </p>
                   </div>
                 )}
 

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 
 const teamMembers = [
   { no: 1, name: "Tauqeer Aslam", designation: "President (Saddar)", role: "president" },
-  { no: 2, name: "Muhammad Ghalib", designation: "Nazim (General Secretary)", role: "nazim" },
+  { no: 2, name: "Muhammad Aqib", designation: "Nazim (General Secretary)", role: "nazim" },
   { no: 3, name: "Abdul Shakoor", designation: "Nazim Markaz-e-Ilm (Knowledge Center)", role: "nazim" },
   { no: 4, name: "Muhammad Shoaib", designation: "Nazim Finance & Membership", role: "nazim" },
   { no: 5, name: "Muhammad Rizwan Ahmed", designation: "Nazim Dawat-o-Tarbiyat (Outreach & Training)", role: "nazim" },

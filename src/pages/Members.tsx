@@ -282,7 +282,14 @@ const Members = () => {
                     <TableCell className="font-medium">{m.full_name}</TableCell>
                     <TableCell className="hidden sm:table-cell">{m.phone || "—"}</TableCell>
                     <TableCell>{m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual"}</TableCell>
-                    <TableCell>Rs. {Number(m.total_paid).toLocaleString()}</TableCell>
+                    <TableCell>
+                      <div>
+                        <span>Rs. {Number(m.total_paid).toLocaleString()}</span>
+                        {m.installment_option && m.total_installments > 0 && (
+                          <p className="text-xs text-muted-foreground">{m.paid_installments || 0}/{m.total_installments} installments</p>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="hidden sm:table-cell">Rs. {Number(m.remaining_amount).toLocaleString()}</TableCell>
                     <TableCell>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${

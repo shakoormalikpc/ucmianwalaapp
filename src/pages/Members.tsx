@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Search, UserPlus, Trash2, FileDown } from "lucide-react";
+import { Search, UserPlus, Trash2, FileDown, Pencil } from "lucide-react";
 import MemberDetail from "@/components/MemberDetail";
 import { exportToPDF, exportToExcel } from "@/lib/exportUtils";
 
@@ -21,6 +21,12 @@ const Members = () => {
   const [filterType, setFilterType] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<any>(null);
+  const [editForm, setEditForm] = useState({
+    full_name: "", father_name: "", phone: "", cnic: "", address: "",
+    rafaqat_no: "", notes: "", paid_installments: 0,
+  });
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [form, setForm] = useState({
     full_name: "", father_name: "", phone: "", cnic: "", address: "",
@@ -116,6 +122,73 @@ const Members = () => {
       toast({ title: "Member deleted" });
       fetchMembers();
     }
+  };
+
+  const openEditDialog = (m: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingMember(m);
+    setEditForm({
+      full_name: m.full_name || "",
+      father_name: m.father_name || "",
+      phone: m.phone || "",
+      cnic: m.cnic || "",
+      address: m.address || "",
+      rafaqat_no: m.rafaqat_no || "",
+      notes: m.notes || "",
+      paid_installments: m.paid_installments || 0,
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember) return;
+
+    const isInstallmentMember = editingMember.installment_option;
+    const oldPaid = editingMember.paid_installments || 0;
+    const newPaid = isInstallmentMember ? editForm.paid_installments : oldPaid;
+    const additionalInstallments = newPaid - oldPaid;
+
+    const updateData: any = {
+      full_name: editForm.full_name,
+      father_name: editForm.father_name || null,
+      phone: editForm.phone || null,
+      cnic: editForm.cnic || null,
+      address: editForm.address || null,
+      rafaqat_no: editForm.rafaqat_no || null,
+      notes: editForm.notes || null,
+      paid_installments: newPaid,
+    };
+
+    const { error } = await supabase.from("members").update(updateData).eq("id", editingMember.id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    // Create payment records for additional installments
+    if (additionalInstallments > 0) {
+      const paymentAmount = additionalInstallments * 1000;
+      await supabase.from("payments").insert({
+        member_id: editingMember.id,
+        amount: paymentAmount,
+        payment_date: new Date().toISOString().split("T")[0],
+        payment_method: "Installment Payment",
+        receipt_number: "",
+        remarks: `${additionalInstallments} installment(s) recorded`,
+        created_by: user?.id,
+      });
+    }
+
+    toast({
+      title: "Member updated",
+      description: additionalInstallments > 0
+        ? `Updated info & recorded ${additionalInstallments} new installment(s)`
+        : "Member information updated",
+    });
+    setEditDialogOpen(false);
+    setEditingMember(null);
+    fetchMembers();
   };
 
   if (selectedMember) {
@@ -273,7 +346,7 @@ const Members = () => {
                   <TableHead>Paid</TableHead>
                   <TableHead className="hidden sm:table-cell">Remaining</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="w-12"></TableHead>
+                  <TableHead className="w-24"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -302,23 +375,28 @@ const Members = () => {
                       }`}>{m.status?.replace("_", " ")}</span>
                     </TableCell>
                     <TableCell>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Member</AlertDialogTitle>
-                            <AlertDialogDescription>Are you sure you want to delete {m.full_name}? This will also delete all their payment records.</AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={(e) => handleDelete(m.id, e)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => openEditDialog(m, e)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Member</AlertDialogTitle>
+                              <AlertDialogDescription>Are you sure you want to delete {m.full_name}? This will also delete all their payment records.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={(e) => handleDelete(m.id, e)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -327,6 +405,76 @@ const Members = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Member Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading">Edit Member</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEdit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Full Name *</Label>
+                <Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} required />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Father Name</Label>
+                <Input value={editForm.father_name} onChange={(e) => setEditForm({ ...editForm, father_name: e.target.value })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Rafaqat No.</Label>
+                <Input value={editForm.rafaqat_no} onChange={(e) => setEditForm({ ...editForm, rafaqat_no: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Phone</Label>
+                <Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>CNIC</Label>
+                <Input value={editForm.cnic} onChange={(e) => setEditForm({ ...editForm, cnic: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Address</Label>
+                <Input value={editForm.address} onChange={(e) => setEditForm({ ...editForm, address: e.target.value })} />
+              </div>
+            </div>
+
+            {editingMember?.installment_option && editingMember?.status !== "completed" && (
+              <div className="space-y-3 rounded-lg border border-border p-3 bg-muted/30">
+                <Label className="text-sm font-semibold">Installments Paid</Label>
+                <Select value={String(editForm.paid_installments)} onValueChange={(v) => setEditForm({ ...editForm, paid_installments: Number(v) })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5, 6].map((n) => (
+                      <SelectItem key={n} value={String(n)} disabled={n < (editingMember?.paid_installments || 0)}>
+                        {n} paid — Rs. {(n * 1000).toLocaleString()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Currently: {editingMember?.paid_installments || 0}/6 paid — 
+                  {editForm.paid_installments > (editingMember?.paid_installments || 0)
+                    ? ` Adding ${editForm.paid_installments - (editingMember?.paid_installments || 0)} new installment(s)`
+                    : " No new installments"}
+                  {editForm.paid_installments === 6 && " ✓ Will be marked completed"}
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label>Notes</Label>
+              <Textarea value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} rows={2} />
+            </div>
+            <Button type="submit" className="w-full">Save Changes</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

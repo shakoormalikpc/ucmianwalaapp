@@ -27,7 +27,7 @@ const Members = () => {
     member_type: "lifetime" as "lifetime" | "installment",
     membership_start_date: new Date().toISOString().split("T")[0],
     rafaqat_no: "",
-    total_installments: 6, notes: "",
+    total_installments: 1, notes: "",
   });
   const { user } = useAuth();
   const { toast } = useToast();
@@ -43,7 +43,7 @@ const Members = () => {
     full_name: "", father_name: "", phone: "", cnic: "", address: "",
     member_type: "lifetime",
     membership_start_date: new Date().toISOString().split("T")[0],
-    rafaqat_no: "", total_installments: 6, notes: "",
+    rafaqat_no: "", total_installments: 1, notes: "",
   });
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -53,7 +53,8 @@ const Members = () => {
     const isInstallment = form.member_type === "installment";
     const isLifetime = form.member_type === "lifetime";
 
-    const installmentTotal = isInstallment ? form.total_installments * 1000 : 6000;
+    const paidAmount = isInstallment ? form.total_installments * 1000 : 6000;
+    const isCompleted = isLifetime || form.total_installments === 6;
 
     const { data: newMember, error } = await supabase.from("members").insert({
       full_name: form.full_name,
@@ -65,11 +66,10 @@ const Members = () => {
       membership_type: "life" as const,
       membership_start_date: form.membership_start_date,
       installment_option: isInstallment,
-      total_installments: isInstallment ? form.total_installments : 0,
-      paid_installments: 0,
-      total_required: installmentTotal,
-      total_paid: isLifetime ? 6000 : 0,
-      status: isLifetime ? "completed" as const : "pending_payment" as const,
+      total_installments: isInstallment ? 6 : 0,
+      paid_installments: isInstallment ? form.total_installments : 0,
+      total_paid: paidAmount,
+      status: isCompleted ? "completed" as const : "pending_payment" as const,
       notes: form.notes || null,
       created_by: user?.id,
     } as any).select().single();
@@ -77,12 +77,12 @@ const Members = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      if (isLifetime && newMember) {
+      if (newMember && paidAmount > 0) {
         await supabase.from("payments").insert({
           member_id: newMember.id,
-          amount: 6000,
+          amount: paidAmount,
           payment_date: form.membership_start_date,
-          payment_method: "Full Payment",
+          payment_method: isLifetime ? "Full Payment" : "Installment Payment",
           receipt_number: "",
           created_by: user?.id,
         });
@@ -91,7 +91,7 @@ const Members = () => {
         title: "Member added successfully",
         description: isLifetime
           ? "Lifetime membership marked as fully paid"
-          : `Installment plan: ${form.total_installments} × Rs. 1,000/month`,
+          : `${form.total_installments}/6 installments paid — Rs. ${paidAmount.toLocaleString()} of Rs. 6,000`,
       });
       setDialogOpen(false);
       resetForm();
@@ -188,7 +188,7 @@ const Members = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>Membership Type</Label>
-                    <Select value={form.member_type} onValueChange={(v: "lifetime" | "installment") => setForm({ ...form, member_type: v, total_installments: v === "installment" ? 6 : 0 })}>
+                    <Select value={form.member_type} onValueChange={(v: "lifetime" | "installment") => setForm({ ...form, member_type: v, total_installments: v === "installment" ? 1 : 0 })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="lifetime">Lifetime (Rs. 6,000)</SelectItem>
@@ -204,19 +204,20 @@ const Members = () => {
 
                 {form.member_type === "installment" && (
                   <div className="space-y-3 rounded-lg border border-border p-3 bg-muted/30">
-                    <Label className="text-sm font-semibold">Number of Installments</Label>
+                    <Label className="text-sm font-semibold">Installments Paid</Label>
                     <Select value={String(form.total_installments)} onValueChange={(v) => setForm({ ...form, total_installments: Number(v) })}>
-                      <SelectTrigger><SelectValue placeholder="Select installments" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="Select installments paid" /></SelectTrigger>
                       <SelectContent>
                         {[1, 2, 3, 4, 5, 6].map((n) => (
                           <SelectItem key={n} value={String(n)}>
-                            {n} × Rs. 1,000 = Rs. {(n * 1000).toLocaleString()}
+                            {n} paid — Rs. {(n * 1000).toLocaleString()}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground">
-                      Total: Rs. {(form.total_installments * 1000).toLocaleString()} of Rs. 6,000 — Remaining: Rs. {(6000 - form.total_installments * 1000).toLocaleString()}
+                      Paid: Rs. {(form.total_installments * 1000).toLocaleString()} of Rs. 6,000 — Remaining: Rs. {(6000 - form.total_installments * 1000).toLocaleString()}
+                      {form.total_installments === 6 && " ✓ Completed"}
                     </p>
                   </div>
                 )}
@@ -287,8 +288,8 @@ const Members = () => {
                     <TableCell>
                       <div>
                         <span>Rs. {Number(m.total_paid).toLocaleString()}</span>
-                        {m.installment_option && m.total_installments > 0 && (
-                          <p className="text-xs text-muted-foreground">{m.paid_installments || 0}/{m.total_installments} installments</p>
+                        {m.installment_option && (
+                          <p className="text-xs text-muted-foreground">{m.paid_installments || 0}/6 installments</p>
                         )}
                       </div>
                     </TableCell>

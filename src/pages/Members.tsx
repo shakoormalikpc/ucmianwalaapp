@@ -53,8 +53,6 @@ const Members = () => {
     const isInstallment = form.member_type === "installment";
     const isLifetime = form.member_type === "lifetime";
 
-    const remainingAmount = isLifetime ? 0 : 6000;
-
     const { data: newMember, error } = await supabase.from("members").insert({
       full_name: form.full_name,
       father_name: form.father_name || null,
@@ -67,10 +65,11 @@ const Members = () => {
       installment_option: isInstallment,
       total_installments: isInstallment ? form.total_installments : 0,
       paid_installments: 0,
-      remaining_amount: remainingAmount,
+      total_required: 6000,
+      total_paid: isLifetime ? 6000 : 0,
+      status: isLifetime ? "completed" as const : "pending_payment" as const,
       notes: form.notes || null,
       created_by: user?.id,
-      ...(isLifetime ? { total_paid: 6000, status: "completed" as const, remaining_amount: 0 } : {}),
     } as any).select().single();
 
     if (error) {

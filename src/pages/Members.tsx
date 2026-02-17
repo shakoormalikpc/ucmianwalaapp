@@ -71,7 +71,7 @@ const Members = () => {
       rafaqat_no: form.rafaqat_no || null,
       membership_type: "life" as const,
       membership_start_date: form.membership_start_date,
-      installment_option: isInstallment,
+      installment_option: isInstallment && form.total_installments < 6,
       total_installments: isInstallment ? 6 : 0,
       paid_installments: isInstallment ? form.total_installments : 0,
       total_paid: 0,
@@ -149,6 +149,8 @@ const Members = () => {
     const newPaid = isInstallmentMember ? editForm.paid_installments : oldPaid;
     const additionalInstallments = newPaid - oldPaid;
 
+    const isFullyPaid = isInstallmentMember && newPaid >= 6;
+
     const updateData: any = {
       full_name: editForm.full_name,
       father_name: editForm.father_name || null,
@@ -158,6 +160,7 @@ const Members = () => {
       rafaqat_no: editForm.rafaqat_no || null,
       notes: editForm.notes || null,
       paid_installments: newPaid,
+      ...(isFullyPaid && { installment_option: false }),
     };
 
     const { error } = await supabase.from("members").update(updateData).eq("id", editingMember.id);

@@ -68,7 +68,7 @@ const Members = () => {
       installment_option: isInstallment,
       total_installments: isInstallment ? 6 : 0,
       paid_installments: isInstallment ? form.total_installments : 0,
-      total_paid: paidAmount,
+      total_paid: 0,
       status: isCompleted ? "completed" as const : "pending_payment" as const,
       notes: form.notes || null,
       created_by: user?.id,

@@ -25,21 +25,21 @@ const Members = () => {
   const [editingMember, setEditingMember] = useState<any>(null);
   const [editForm, setEditForm] = useState({
     full_name: "", father_name: "", phone: "", cnic: "", address: "",
-    rafaqat_no: "", notes: "", paid_installments: 0,
+    rafaqat_no: "", new_rafaqat_no: "", notes: "", paid_installments: 0,
   });
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [form, setForm] = useState({
     full_name: "", father_name: "", phone: "", cnic: "", address: "",
     member_type: "lifetime" as "lifetime" | "installment",
     membership_start_date: new Date().toISOString().split("T")[0],
-    rafaqat_no: "",
+    rafaqat_no: "", new_rafaqat_no: "",
     total_installments: 1, notes: "",
   });
   const { user } = useAuth();
   const { toast } = useToast();
 
   const fetchMembers = async () => {
-    const { data } = await supabase.from("members").select("*").order("created_at", { ascending: false });
+    const { data } = await supabase.from("members").select("*").order("new_rafaqat_no", { ascending: true, nullsFirst: false }).order("rafaqat_no", { ascending: true, nullsFirst: false });
     setMembers(data || []);
   };
 
@@ -49,7 +49,7 @@ const Members = () => {
     full_name: "", father_name: "", phone: "", cnic: "", address: "",
     member_type: "lifetime",
     membership_start_date: new Date().toISOString().split("T")[0],
-    rafaqat_no: "", total_installments: 1, notes: "",
+    rafaqat_no: "", new_rafaqat_no: "", total_installments: 1, notes: "",
   });
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -69,6 +69,7 @@ const Members = () => {
       cnic: form.cnic || null,
       address: form.address || null,
       rafaqat_no: form.rafaqat_no || null,
+      new_rafaqat_no: form.new_rafaqat_no || null,
       membership_type: "life" as const,
       membership_start_date: form.membership_start_date,
       installment_option: isInstallment && form.total_installments < 6,
@@ -134,6 +135,7 @@ const Members = () => {
       cnic: m.cnic || "",
       address: m.address || "",
       rafaqat_no: m.rafaqat_no || "",
+      new_rafaqat_no: m.new_rafaqat_no || "",
       notes: m.notes || "",
       paid_installments: m.paid_installments || 0,
     });
@@ -158,6 +160,7 @@ const Members = () => {
       cnic: editForm.cnic || null,
       address: editForm.address || null,
       rafaqat_no: editForm.rafaqat_no || null,
+      new_rafaqat_no: editForm.new_rafaqat_no || null,
       notes: editForm.notes || null,
       paid_installments: newPaid,
       ...(isFullyPaid && { installment_option: false }),
@@ -209,16 +212,16 @@ const Members = () => {
           <Button variant="outline" size="sm" onClick={() => {
             exportToPDF({
               title: "Members Report",
-              headers: ["Rafaqat No.", "Name", "Phone", "Type", "Paid", "Remaining", "Status"],
-              rows: filtered.map((m) => [m.rafaqat_no || "—", m.full_name, m.phone || "—", m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual", `Rs. ${Number(m.total_paid).toLocaleString()}`, `Rs. ${Number(m.remaining_amount).toLocaleString()}`, m.status?.replace("_", " ")]),
+              headers: ["Old Rafaqat No.", "New Rafaqat No.", "Name", "Phone", "Type", "Paid", "Remaining", "Status"],
+              rows: filtered.map((m) => [m.rafaqat_no || "—", m.new_rafaqat_no || "—", m.full_name, m.phone || "—", m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual", `Rs. ${Number(m.total_paid).toLocaleString()}`, `Rs. ${Number(m.remaining_amount).toLocaleString()}`, m.status?.replace("_", " ")]),
               filename: "members-report",
             });
           }}><FileDown className="w-4 h-4 mr-1" />PDF</Button>
           <Button variant="outline" size="sm" onClick={() => {
             exportToExcel({
               title: "Members",
-              headers: ["Rafaqat No.", "Name", "Phone", "Type", "Paid", "Remaining", "Status"],
-              rows: filtered.map((m) => [m.rafaqat_no || "—", m.full_name, m.phone || "—", m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual", Number(m.total_paid), Number(m.remaining_amount), m.status?.replace("_", " ")]),
+              headers: ["Old Rafaqat No.", "New Rafaqat No.", "Name", "Phone", "Type", "Paid", "Remaining", "Status"],
+              rows: filtered.map((m) => [m.rafaqat_no || "—", m.new_rafaqat_no || "—", m.full_name, m.phone || "—", m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual", Number(m.total_paid), Number(m.remaining_amount), m.status?.replace("_", " ")]),
               filename: "members-report",
             });
           }}><FileDown className="w-4 h-4 mr-1" />Excel</Button>
@@ -243,9 +246,15 @@ const Members = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label>Rafaqat No.</Label>
+                    <Label>Old Rafaqat No.</Label>
                     <Input value={form.rafaqat_no} onChange={(e) => setForm({ ...form, rafaqat_no: e.target.value })} placeholder="e.g. R-001" />
                   </div>
+                  <div className="space-y-1.5">
+                    <Label>New Rafaqat No.</Label>
+                    <Input value={form.new_rafaqat_no} onChange={(e) => setForm({ ...form, new_rafaqat_no: e.target.value })} placeholder="e.g. NR-001" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>Phone</Label>
                     <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
@@ -342,7 +351,8 @@ const Members = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Rafaqat No.</TableHead>
+                   <TableHead>Old Rafaqat No.</TableHead>
+                   <TableHead>New Rafaqat No.</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead className="hidden sm:table-cell">Phone</TableHead>
                   <TableHead>Type</TableHead>
@@ -354,10 +364,11 @@ const Members = () => {
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No members found</TableCell></TableRow>
+                   <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No members found</TableCell></TableRow>
                 ) : filtered.map((m) => (
                   <TableRow key={m.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedMember(m)}>
                     <TableCell className="font-mono text-xs">{m.rafaqat_no || "—"}</TableCell>
+                    <TableCell className="font-mono text-xs">{m.new_rafaqat_no || "—"}</TableCell>
                     <TableCell className="font-medium">{m.full_name}</TableCell>
                     <TableCell className="hidden sm:table-cell">{m.phone || "—"}</TableCell>
                     <TableCell>{m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual"}</TableCell>
@@ -428,9 +439,15 @@ const Members = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Rafaqat No.</Label>
+                <Label>Old Rafaqat No.</Label>
                 <Input value={editForm.rafaqat_no} onChange={(e) => setEditForm({ ...editForm, rafaqat_no: e.target.value })} />
               </div>
+              <div className="space-y-1.5">
+                <Label>New Rafaqat No.</Label>
+                <Input value={editForm.new_rafaqat_no} onChange={(e) => setEditForm({ ...editForm, new_rafaqat_no: e.target.value })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Phone</Label>
                 <Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />

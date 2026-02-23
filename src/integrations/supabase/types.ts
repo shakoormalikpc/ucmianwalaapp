@@ -113,6 +113,7 @@ export type Database = {
           installment_option: boolean
           membership_start_date: string
           membership_type: Database["public"]["Enums"]["membership_type"]
+          new_rafaqat_no: string | null
           notes: string | null
           paid_installments: number | null
           phone: string | null
@@ -135,6 +136,7 @@ export type Database = {
           installment_option?: boolean
           membership_start_date?: string
           membership_type: Database["public"]["Enums"]["membership_type"]
+          new_rafaqat_no?: string | null
           notes?: string | null
           paid_installments?: number | null
           phone?: string | null
@@ -157,6 +159,7 @@ export type Database = {
           installment_option?: boolean
           membership_start_date?: string
           membership_type?: Database["public"]["Enums"]["membership_type"]
+          new_rafaqat_no?: string | null
           notes?: string | null
           paid_installments?: number | null
           phone?: string | null

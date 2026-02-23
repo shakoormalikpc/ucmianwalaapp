@@ -12,6 +12,7 @@ import Donations from "./pages/Donations";
 import Expenses from "./pages/Expenses";
 import Reports from "./pages/Reports";
 import Designations from "./pages/Designations";
+import Activities from "./pages/Activities";
 import AppLayout from "./components/AppLayout";
 import NotFound from "./pages/NotFound";
 
@@ -31,10 +32,12 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/members" element={<Members />} />
               <Route path="/payments" element={<Payments />} />
-              <Route path="/donations" element={<Donations />} />
+              <Route path="/fund" element={<Donations />} />
+              <Route path="/donations" element={<Navigate to="/fund" replace />} />
               <Route path="/expenses" element={<Expenses />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/designations" element={<Designations />} />
+              <Route path="/activities" element={<Activities />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

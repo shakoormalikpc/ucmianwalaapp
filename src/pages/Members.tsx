@@ -355,7 +355,7 @@ const Members = () => {
                    <TableHead>New Rafaqat No.</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Phone</TableHead>
-                  <TableHead className="hidden sm:table-cell">Address</TableHead>
+                  <TableHead>Address</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="w-24"></TableHead>
                 </TableRow>
@@ -369,7 +369,7 @@ const Members = () => {
                     <TableCell className="font-mono text-xs">{m.new_rafaqat_no || "—"}</TableCell>
                     <TableCell className="font-medium">{m.full_name}</TableCell>
                     <TableCell>{m.phone || "—"}</TableCell>
-                    <TableCell className="hidden sm:table-cell">{m.address || "—"}</TableCell>
+                    <TableCell>{m.address || "—"}</TableCell>
                     <TableCell>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                         m.status === "completed" ? "bg-success/10 text-success" :

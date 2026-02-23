@@ -16,18 +16,21 @@ export type Database = {
     Tables: {
       activities: {
         Row: {
+          activity_date: string
           created_at: string
           created_by: string | null
           id: string
           message: string
         }
         Insert: {
+          activity_date?: string
           created_at?: string
           created_by?: string | null
           id?: string
           message: string
         }
         Update: {
+          activity_date?: string
           created_at?: string
           created_by?: string | null
           id?: string

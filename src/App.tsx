@@ -9,8 +9,6 @@ import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
 import Payments from "./pages/Payments";
 import Donations from "./pages/Donations";
-import Expenses from "./pages/Expenses";
-import Reports from "./pages/Reports";
 import Designations from "./pages/Designations";
 import Activities from "./pages/Activities";
 import AppLayout from "./components/AppLayout";
@@ -34,8 +32,6 @@ const App = () => (
               <Route path="/payments" element={<Payments />} />
               <Route path="/fund" element={<Donations />} />
               <Route path="/donations" element={<Navigate to="/fund" replace />} />
-              <Route path="/expenses" element={<Expenses />} />
-              <Route path="/reports" element={<Reports />} />
               <Route path="/designations" element={<Designations />} />
               <Route path="/activities" element={<Activities />} />
             </Route>

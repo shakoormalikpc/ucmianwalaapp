@@ -42,7 +42,7 @@ const Donations = () => {
     });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); }
     else {
-      toast({ title: "Donation recorded" });
+      toast({ title: "Fund recorded" });
       setDialogOpen(false);
       setForm({ donor_name: "", contact_number: "", amount: "", donation_date: new Date().toISOString().split("T")[0], description: "" });
       fetchDonations();
@@ -54,7 +54,7 @@ const Donations = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Donation deleted" });
+      toast({ title: "Fund entry deleted" });
       fetchDonations();
     }
   };
@@ -63,24 +63,24 @@ const Donations = () => {
     <div>
       <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="page-title">Donations</h1>
-          <p className="page-description">Total: Rs. {total.toLocaleString()} from {donations.length} donations</p>
+          <h1 className="page-title">Fund</h1>
+          <p className="page-description">Total: Rs. {total.toLocaleString()} from {donations.length} records</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => exportToPDF({
-            title: "Donations Report", headers: ["Donor", "Contact", "Amount", "Date", "Description"],
+            title: "Fund Report", headers: ["Donor", "Contact", "Amount", "Date", "Description"],
             rows: donations.map((d) => [d.donor_name, d.contact_number || "—", `Rs. ${Number(d.amount).toLocaleString()}`, format(new Date(d.donation_date), "dd MMM yyyy"), d.description || "—"]),
-            filename: "donations-report",
+            filename: "fund-report",
           })}><FileDown className="w-4 h-4 mr-1" />PDF</Button>
           <Button variant="outline" size="sm" onClick={() => exportToExcel({
-            title: "Donations", headers: ["Donor", "Contact", "Amount", "Date", "Description"],
+            title: "Fund", headers: ["Donor", "Contact", "Amount", "Date", "Description"],
             rows: donations.map((d) => [d.donor_name, d.contact_number || "—", Number(d.amount), format(new Date(d.donation_date), "dd MMM yyyy"), d.description || "—"]),
-            filename: "donations-report",
+            filename: "fund-report",
           })}><FileDown className="w-4 h-4 mr-1" />Excel</Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Add Donation</Button></DialogTrigger>
+            <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />Add Fund</Button></DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle className="font-heading">Record Donation</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle className="font-heading">Record Fund</DialogTitle></DialogHeader>
             <form onSubmit={handleAdd} className="space-y-4">
               <div className="space-y-1.5"><Label>Donor Name *</Label><Input value={form.donor_name} onChange={(e) => setForm({ ...form, donor_name: e.target.value })} required /></div>
               <div className="space-y-1.5"><Label>Contact Number</Label><Input value={form.contact_number} onChange={(e) => setForm({ ...form, contact_number: e.target.value })} /></div>
@@ -89,7 +89,7 @@ const Donations = () => {
                 <div className="space-y-1.5"><Label>Date</Label><Input type="date" value={form.donation_date} onChange={(e) => setForm({ ...form, donation_date: e.target.value })} /></div>
               </div>
               <div className="space-y-1.5"><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} /></div>
-              <Button type="submit" className="w-full">Record Donation</Button>
+              <Button type="submit" className="w-full">Record Fund</Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -110,7 +110,7 @@ const Donations = () => {
             </TableHeader>
             <TableBody>
               {donations.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No donations recorded</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No fund records</TableCell></TableRow>
               ) : donations.map((d) => (
                 <TableRow key={d.id}>
                   <TableCell className="font-medium">{d.donor_name}</TableCell>
@@ -127,8 +127,8 @@ const Donations = () => {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Donation</AlertDialogTitle>
-                          <AlertDialogDescription>Are you sure you want to delete this donation from {d.donor_name}? This action cannot be undone.</AlertDialogDescription>
+                          <AlertDialogTitle>Delete Fund Entry</AlertDialogTitle>
+                          <AlertDialogDescription>Are you sure you want to delete this fund entry from {d.donor_name}? This action cannot be undone.</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>

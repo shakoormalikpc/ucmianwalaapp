@@ -90,7 +90,7 @@ const Dashboard = () => {
                 <YAxis className="text-xs" />
                 <Tooltip />
                 <Bar dataKey="payments" fill="hsl(152, 60%, 40%)" name="Payments" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="donations" fill="hsl(205, 80%, 50%)" name="Donations" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="donations" fill="hsl(205, 80%, 50%)" name="Fund" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="expenses" fill="hsl(0, 72%, 51%)" name="Expenses" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

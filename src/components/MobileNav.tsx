@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  LayoutDashboard, Users, CreditCard, Heart, Receipt, BarChart3, LogOut, Shield, Menu, Award,
+  LayoutDashboard, Users, CreditCard, Heart, Receipt, BarChart3, LogOut, Shield, Menu, Award, MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -11,10 +11,11 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Users, label: "Members", path: "/members" },
   { icon: CreditCard, label: "Payments", path: "/payments" },
-  { icon: Heart, label: "Donations", path: "/donations" },
+  { icon: Heart, label: "Fund", path: "/fund" },
   { icon: Receipt, label: "Expenses", path: "/expenses" },
   { icon: BarChart3, label: "Reports", path: "/reports" },
   { icon: Award, label: "Designations", path: "/designations" },
+  { icon: MessageSquare, label: "Activities", path: "/activities" },
 ];
 
 const MobileNav = () => {

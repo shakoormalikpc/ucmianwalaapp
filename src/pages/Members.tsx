@@ -354,33 +354,22 @@ const Members = () => {
                    <TableHead>Old Rafaqat No.</TableHead>
                    <TableHead>New Rafaqat No.</TableHead>
                   <TableHead>Name</TableHead>
-                  <TableHead className="hidden sm:table-cell">Phone</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Paid</TableHead>
-                  <TableHead className="hidden sm:table-cell">Remaining</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead className="hidden sm:table-cell">Address</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="w-24"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                   <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No members found</TableCell></TableRow>
+                   <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No members found</TableCell></TableRow>
                 ) : filtered.map((m) => (
                   <TableRow key={m.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedMember(m)}>
                     <TableCell className="font-mono text-xs">{m.rafaqat_no || "—"}</TableCell>
                     <TableCell className="font-mono text-xs">{m.new_rafaqat_no || "—"}</TableCell>
                     <TableCell className="font-medium">{m.full_name}</TableCell>
-                    <TableCell className="hidden sm:table-cell">{m.phone || "—"}</TableCell>
-                    <TableCell>{m.membership_type === "life" ? (m.installment_option ? "Installment" : "Lifetime") : "Annual"}</TableCell>
-                    <TableCell>
-                      <div>
-                        <span>Rs. {Number(m.total_paid).toLocaleString()}</span>
-                        {m.installment_option && (
-                          <p className="text-xs text-muted-foreground">{m.paid_installments || 0}/6 installments</p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">Rs. {Number(m.remaining_amount).toLocaleString()}</TableCell>
+                    <TableCell>{m.phone || "—"}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{m.address || "—"}</TableCell>
                     <TableCell>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                         m.status === "completed" ? "bg-success/10 text-success" :

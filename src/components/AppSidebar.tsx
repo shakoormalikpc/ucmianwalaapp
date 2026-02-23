@@ -5,8 +5,6 @@ import {
   Users,
   CreditCard,
   Heart,
-  Receipt,
-  BarChart3,
   LogOut,
   Shield,
   Award,
@@ -19,8 +17,6 @@ const navItems = [
   { icon: Users, label: "Members", path: "/members" },
   { icon: CreditCard, label: "Payments", path: "/payments" },
   { icon: Heart, label: "Fund", path: "/fund" },
-  { icon: Receipt, label: "Expenses", path: "/expenses" },
-  { icon: BarChart3, label: "Reports", path: "/reports" },
   { icon: Award, label: "Designations", path: "/designations" },
   { icon: MessageSquare, label: "Activities", path: "/activities" },
 ];

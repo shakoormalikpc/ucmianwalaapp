@@ -68,12 +68,12 @@ const Donations = () => {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => exportToPDF({
-            title: "Fund Report", headers: ["Donor", "Contact", "Amount", "Date", "Description"],
+            title: "Fund Report", headers: ["Name", "Contact", "Amount", "Date", "Description"],
             rows: donations.map((d) => [d.donor_name, d.contact_number || "—", `Rs. ${Number(d.amount).toLocaleString()}`, format(new Date(d.donation_date), "dd MMM yyyy"), d.description || "—"]),
             filename: "fund-report",
           })}><FileDown className="w-4 h-4 mr-1" />PDF</Button>
           <Button variant="outline" size="sm" onClick={() => exportToExcel({
-            title: "Fund", headers: ["Donor", "Contact", "Amount", "Date", "Description"],
+            title: "Fund", headers: ["Name", "Contact", "Amount", "Date", "Description"],
             rows: donations.map((d) => [d.donor_name, d.contact_number || "—", Number(d.amount), format(new Date(d.donation_date), "dd MMM yyyy"), d.description || "—"]),
             filename: "fund-report",
           })}><FileDown className="w-4 h-4 mr-1" />Excel</Button>
@@ -82,7 +82,7 @@ const Donations = () => {
             <DialogContent>
               <DialogHeader><DialogTitle className="font-heading">Record Fund</DialogTitle></DialogHeader>
             <form onSubmit={handleAdd} className="space-y-4">
-              <div className="space-y-1.5"><Label>Donor Name *</Label><Input value={form.donor_name} onChange={(e) => setForm({ ...form, donor_name: e.target.value })} required /></div>
+              <div className="space-y-1.5"><Label>Name *</Label><Input value={form.donor_name} onChange={(e) => setForm({ ...form, donor_name: e.target.value })} required /></div>
               <div className="space-y-1.5"><Label>Contact Number</Label><Input value={form.contact_number} onChange={(e) => setForm({ ...form, contact_number: e.target.value })} /></div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5"><Label>Amount *</Label><Input type="number" min="1" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required /></div>
@@ -100,7 +100,7 @@ const Donations = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Donor</TableHead>
+                <TableHead>Name</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Date</TableHead>

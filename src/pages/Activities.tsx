@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -12,6 +14,7 @@ import { format } from "date-fns";
 const Activities = () => {
   const [activities, setActivities] = useState<any[]>([]);
   const [message, setMessage] = useState("");
+  const [activityDate, setActivityDate] = useState(new Date().toISOString().split("T")[0]);
   const { user, role } = useAuth();
   const { toast } = useToast();
   const isPresident = role === "president";
@@ -20,7 +23,7 @@ const Activities = () => {
     const { data } = await supabase
       .from("activities")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("activity_date", { ascending: false });
     setActivities(data || []);
   };
 
@@ -31,6 +34,7 @@ const Activities = () => {
     if (!message.trim()) return;
     const { error } = await supabase.from("activities").insert({
       message: message.trim(),
+      activity_date: activityDate,
       created_by: user?.id,
     });
     if (error) {
@@ -38,6 +42,7 @@ const Activities = () => {
     } else {
       toast({ title: "Activity posted" });
       setMessage("");
+      setActivityDate(new Date().toISOString().split("T")[0]);
       fetchActivities();
     }
   };
@@ -70,10 +75,16 @@ const Activities = () => {
                 rows={3}
                 required
               />
-              <Button type="submit" className="w-full sm:w-auto">
-                <Send className="w-4 h-4 mr-2" />
-                Post Activity
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+                <div className="space-y-1.5">
+                  <Label>Date</Label>
+                  <Input type="date" value={activityDate} onChange={(e) => setActivityDate(e.target.value)} className="w-44" />
+                </div>
+                <Button type="submit">
+                  <Send className="w-4 h-4 mr-2" />
+                  Post Activity
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -94,7 +105,7 @@ const Activities = () => {
                   <div className="flex-1">
                     <p className="text-sm whitespace-pre-wrap">{a.message}</p>
                     <p className="text-xs text-muted-foreground mt-2">
-                      {format(new Date(a.created_at), "dd MMM yyyy, hh:mm a")}
+                      {format(new Date(a.activity_date), "dd MMM yyyy")}
                     </p>
                   </div>
                   {isPresident && (

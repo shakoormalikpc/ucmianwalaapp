@@ -1,0 +1,2 @@
+
+ALTER TABLE public.activities ADD COLUMN activity_date DATE NOT NULL DEFAULT CURRENT_DATE;

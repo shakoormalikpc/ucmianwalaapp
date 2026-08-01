@@ -481,26 +481,36 @@ const Members = () => {
               </div>
             </div>
 
-            {editingMember?.installment_option && editingMember?.status !== "completed" && (
+            {((editingMember?.total_installments || 0) > 0 || editingMember?.installment_option) && (
               <div className="space-y-3 rounded-lg border border-border p-3 bg-muted/30">
-                <Label className="text-sm font-semibold">Installments Paid</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label className="text-sm font-semibold">Installments Paid</Label>
+                  {editingMember?.status === "completed" && (
+                    <span className="text-[11px] text-muted-foreground">Completed — editable</span>
+                  )}
+                </div>
                 <Select value={String(editForm.paid_installments)} onValueChange={(v) => setEditForm({ ...editForm, paid_installments: Number(v) })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {[1, 2, 3, 4, 5, 6].map((n) => (
-                      <SelectItem key={n} value={String(n)} disabled={n < (editingMember?.paid_installments || 0)}>
+                    {[0, 1, 2, 3, 4, 5, 6].map((n) => (
+                      <SelectItem key={n} value={String(n)}>
                         {n} paid — Rs. {(n * 1000).toLocaleString()}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Currently: {editingMember?.paid_installments || 0}/6 paid — 
+                  Currently: {editingMember?.paid_installments || 0}/6 paid —
                   {editForm.paid_installments > (editingMember?.paid_installments || 0)
-                    ? ` Adding ${editForm.paid_installments - (editingMember?.paid_installments || 0)} new installment(s)`
-                    : " No new installments"}
+                    ? ` Adding ${editForm.paid_installments - (editingMember?.paid_installments || 0)} installment(s)`
+                    : editForm.paid_installments < (editingMember?.paid_installments || 0)
+                      ? ` Removing ${(editingMember?.paid_installments || 0) - editForm.paid_installments} installment(s) and their payment records`
+                      : " No change"}
                   {editForm.paid_installments === 6 && " ✓ Will be marked completed"}
                 </p>
+                {editForm.paid_installments < (editingMember?.paid_installments || 0) && !isPresident && (
+                  <p className="text-xs text-destructive">Only the president can remove payment records.</p>
+                )}
               </div>
             )}
 

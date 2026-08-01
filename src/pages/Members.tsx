@@ -35,7 +35,7 @@ const Members = () => {
     rafaqat_no: "", new_rafaqat_no: "",
     total_installments: 1, notes: "",
   });
-  const { user } = useAuth();
+  const { user, isPresident } = useAuth();
   const { toast } = useToast();
 
   const fetchMembers = async () => {

@@ -35,7 +35,7 @@ const Members = () => {
     rafaqat_no: "", new_rafaqat_no: "",
     total_installments: 1, notes: "",
   });
-  const { user } = useAuth();
+  const { user, isPresident } = useAuth();
   const { toast } = useToast();
 
   const fetchMembers = async () => {
@@ -146,12 +146,10 @@ const Members = () => {
     e.preventDefault();
     if (!editingMember) return;
 
-    const isInstallmentMember = editingMember.installment_option;
+    const hasPlan = (editingMember.total_installments || 0) > 0 || editingMember.installment_option;
     const oldPaid = editingMember.paid_installments || 0;
-    const newPaid = isInstallmentMember ? editForm.paid_installments : oldPaid;
-    const additionalInstallments = newPaid - oldPaid;
-
-    const isFullyPaid = isInstallmentMember && newPaid >= 6;
+    const newPaid = hasPlan ? editForm.paid_installments : oldPaid;
+    const delta = newPaid - oldPaid;
 
     const updateData: any = {
       full_name: editForm.full_name,
@@ -162,8 +160,7 @@ const Members = () => {
       rafaqat_no: editForm.rafaqat_no || null,
       new_rafaqat_no: editForm.new_rafaqat_no || null,
       notes: editForm.notes || null,
-      paid_installments: newPaid,
-      ...(isFullyPaid && { installment_option: false }),
+      ...(hasPlan && { paid_installments: newPaid, installment_option: newPaid < 6 }),
     };
 
     const { error } = await supabase.from("members").update(updateData).eq("id", editingMember.id);
@@ -172,25 +169,56 @@ const Members = () => {
       return;
     }
 
-    // Create payment records for additional installments
-    if (additionalInstallments > 0) {
-      const paymentAmount = additionalInstallments * 1000;
-      await supabase.from("payments").insert({
+    // Add payment records for extra installments
+    if (delta > 0) {
+      const { error: payError } = await supabase.from("payments").insert({
         member_id: editingMember.id,
-        amount: paymentAmount,
+        amount: delta * 1000,
         payment_date: new Date().toISOString().split("T")[0],
         payment_method: "Installment Payment",
         receipt_number: "",
-        remarks: `${additionalInstallments} installment(s) recorded`,
+        remarks: `${delta} installment(s) recorded`,
         created_by: user?.id,
       });
+      if (payError) {
+        toast({ title: "Payment not recorded", description: payError.message, variant: "destructive" });
+      }
+    }
+
+    // Remove the most recent payments when installments are reduced
+    if (delta < 0) {
+      let toRemove = Math.abs(delta) * 1000;
+      const { data: recent } = await supabase
+        .from("payments")
+        .select("id, amount")
+        .eq("member_id", editingMember.id)
+        .order("payment_date", { ascending: false })
+        .order("created_at", { ascending: false });
+      const ids: string[] = [];
+      for (const p of recent || []) {
+        if (toRemove <= 0) break;
+        ids.push(p.id);
+        toRemove -= Number(p.amount);
+      }
+      if (ids.length) {
+        const { error: delError } = await supabase.from("payments").delete().in("id", ids);
+        if (delError) {
+          toast({
+            title: "Could not remove payments",
+            description: isPresident ? delError.message : "Only the president can remove payment records.",
+            variant: "destructive",
+          });
+        }
+      }
     }
 
     toast({
       title: "Member updated",
-      description: additionalInstallments > 0
-        ? `Updated info & recorded ${additionalInstallments} new installment(s)`
-        : "Member information updated",
+      description: delta > 0
+        ? `Updated info & recorded ${delta} new installment(s)`
+        : delta < 0
+          ? `Updated info & removed ${Math.abs(delta)} installment(s)`
+          : "Member information updated",
     });
     setEditDialogOpen(false);
     setEditingMember(null);
@@ -453,26 +481,36 @@ const Members = () => {
               </div>
             </div>
 
-            {editingMember?.installment_option && editingMember?.status !== "completed" && (
+            {((editingMember?.total_installments || 0) > 0 || editingMember?.installment_option) && (
               <div className="space-y-3 rounded-lg border border-border p-3 bg-muted/30">
-                <Label className="text-sm font-semibold">Installments Paid</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label className="text-sm font-semibold">Installments Paid</Label>
+                  {editingMember?.status === "completed" && (
+                    <span className="text-[11px] text-muted-foreground">Completed — editable</span>
+                  )}
+                </div>
                 <Select value={String(editForm.paid_installments)} onValueChange={(v) => setEditForm({ ...editForm, paid_installments: Number(v) })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {[1, 2, 3, 4, 5, 6].map((n) => (
-                      <SelectItem key={n} value={String(n)} disabled={n < (editingMember?.paid_installments || 0)}>
+                    {[0, 1, 2, 3, 4, 5, 6].map((n) => (
+                      <SelectItem key={n} value={String(n)}>
                         {n} paid — Rs. {(n * 1000).toLocaleString()}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Currently: {editingMember?.paid_installments || 0}/6 paid — 
+                  Currently: {editingMember?.paid_installments || 0}/6 paid —
                   {editForm.paid_installments > (editingMember?.paid_installments || 0)
-                    ? ` Adding ${editForm.paid_installments - (editingMember?.paid_installments || 0)} new installment(s)`
-                    : " No new installments"}
+                    ? ` Adding ${editForm.paid_installments - (editingMember?.paid_installments || 0)} installment(s)`
+                    : editForm.paid_installments < (editingMember?.paid_installments || 0)
+                      ? ` Removing ${(editingMember?.paid_installments || 0) - editForm.paid_installments} installment(s) and their payment records`
+                      : " No change"}
                   {editForm.paid_installments === 6 && " ✓ Will be marked completed"}
                 </p>
+                {editForm.paid_installments < (editingMember?.paid_installments || 0) && !isPresident && (
+                  <p className="text-xs text-destructive">Only the president can remove payment records.</p>
+                )}
               </div>
             )}
 

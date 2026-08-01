@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +36,12 @@ const Login = () => {
   const [membersLoading, setMembersLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+
+  // Only allow same-origin relative paths as a post-login redirect target.
+  const rawNext = searchParams.get("next");
+  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +52,7 @@ const Login = () => {
     if (error) {
       toast({ title: "Login Failed", description: error, variant: "destructive" });
     } else {
-      navigate("/dashboard");
+      navigate(nextPath ?? "/dashboard");
     }
   };
 

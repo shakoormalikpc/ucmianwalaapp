@@ -57,8 +57,10 @@ const TehreekFund = () => {
   const [addContribOpen, setAddContribOpen] = useState(false);
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
   const [addAccountOpen, setAddAccountOpen] = useState(false);
+  const [addFundOpen, setAddFundOpen] = useState(false);
 
   const [contribForm, setContribForm] = useState({ funder_name: "", amount: "", contribution_date: today(), fund_account_id: "", notes: "" });
+  const [fundForm, setFundForm] = useState({ source: "", amount: "", contribution_date: today(), fund_account_id: "", notes: "" });
   const [expenseForm, setExpenseForm] = useState({ title: "", amount: "", expense_date: today(), fund_account_id: "", description: "" });
   const [accountForm, setAccountForm] = useState({ name: "", account_type: "cash", bank_name: "", account_number: "", notes: "" });
 
@@ -91,6 +93,27 @@ const TehreekFund = () => {
       toast({ title: "Contribution recorded" });
       setAddContribOpen(false);
       setContribForm({ funder_name: "", amount: "", contribution_date: today(), fund_account_id: "", notes: "" });
+      fetchData();
+      notifyFundUpdated();
+    }
+  };
+
+  const handleAddFund = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase.from("fund_contributions").insert({
+      funder_name: fundForm.source.trim() || "Direct Fund Addition",
+      amount: Number(fundForm.amount),
+      contribution_date: fundForm.contribution_date,
+      fund_account_id: fundForm.fund_account_id || null,
+      notes: fundForm.notes || null,
+      created_by: user?.id,
+    });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Fund added" });
+      setAddFundOpen(false);
+      setFundForm({ source: "", amount: "", contribution_date: today(), fund_account_id: "", notes: "" });
       fetchData();
       notifyFundUpdated();
     }

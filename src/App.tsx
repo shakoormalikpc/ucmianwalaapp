@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
 import Payments from "./pages/Payments";
 import Donations from "./pages/Donations";
+import TehreekFund from "./pages/TehreekFund";
 import Designations from "./pages/Designations";
 import Activities from "./pages/Activities";
 import AppLayout from "./components/AppLayout";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/payments" element={<Payments />} />
               <Route path="/fund" element={<Donations />} />
               <Route path="/donations" element={<Navigate to="/fund" replace />} />
+              <Route path="/tehreek-fund" element={<TehreekFund />} />
               <Route path="/designations" element={<Designations />} />
               <Route path="/activities" element={<Activities />} />
             </Route>

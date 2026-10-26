@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useTehreekFund } from "@/hooks/useTehreekFund";
 import {
-  LayoutDashboard, Users, CreditCard, Heart, LogOut, Shield, Menu, Award, MessageSquare,
+  LayoutDashboard, Users, CreditCard, Heart, LogOut, Shield, Menu, Award, MessageSquare, Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -12,6 +13,7 @@ const navItems = [
   { icon: Users, label: "Members", path: "/members" },
   { icon: CreditCard, label: "Payments", path: "/payments" },
   { icon: Heart, label: "Fund", path: "/fund" },
+  { icon: Wallet, label: "Tehreek Fund", path: "/tehreek-fund" },
   { icon: Award, label: "Designations", path: "/designations" },
   { icon: MessageSquare, label: "Activities", path: "/activities" },
 ];
@@ -20,6 +22,7 @@ const MobileNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, role } = useAuth();
+  const { balance, totalExpenses } = useTehreekFund();
   const [open, setOpen] = useState(false);
 
   return (
@@ -60,6 +63,11 @@ const MobileNav = () => {
             ))}
           </nav>
           <div className="p-3 border-t border-sidebar-border mt-auto">
+            <div className="mb-2 rounded-lg bg-sidebar-primary/10 border border-sidebar-border p-2.5">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-sidebar-foreground/60">Tehreek Fund Balance</p>
+              <p className="font-heading font-bold text-base text-sidebar-foreground mt-0.5">Rs. {balance.toLocaleString()}</p>
+              <p className="text-[10px] text-sidebar-foreground/50 mt-0.5">Expenses: Rs. {totalExpenses.toLocaleString()}</p>
+            </div>
             <button onClick={signOut} className="sidebar-nav-item w-full text-destructive/80 hover:text-destructive hover:bg-destructive/10">
               <LogOut className="w-4 h-4" />
               Sign Out

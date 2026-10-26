@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useTehreekFund } from "@/hooks/useTehreekFund";
 import {
   LayoutDashboard,
   Users,
@@ -7,6 +8,7 @@ import {
   Heart,
   LogOut,
   Shield,
+  Wallet,
   Award,
   MessageSquare,
 } from "lucide-react";
@@ -17,6 +19,7 @@ const navItems = [
   { icon: Users, label: "Members", path: "/members" },
   { icon: CreditCard, label: "Payments", path: "/payments" },
   { icon: Heart, label: "Fund", path: "/fund" },
+  { icon: Wallet, label: "Tehreek Fund", path: "/tehreek-fund" },
   { icon: Award, label: "Designations", path: "/designations" },
   { icon: MessageSquare, label: "Activities", path: "/activities" },
 ];
@@ -25,6 +28,7 @@ const AppSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, role } = useAuth();
+  const { balance, totalExpenses } = useTehreekFund();
 
   return (
     <aside className="hidden lg:flex flex-col w-64 bg-sidebar min-h-screen">
@@ -57,6 +61,11 @@ const AppSidebar = () => {
       </nav>
 
       <div className="p-3 border-t border-sidebar-border">
+        <div className="mb-2 rounded-lg bg-sidebar-primary/10 border border-sidebar-border p-2.5">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-sidebar-foreground/60">Tehreek Fund Balance</p>
+          <p className="font-heading font-bold text-base text-sidebar-foreground mt-0.5">Rs. {balance.toLocaleString()}</p>
+          <p className="text-[10px] text-sidebar-foreground/50 mt-0.5">Expenses: Rs. {totalExpenses.toLocaleString()}</p>
+        </div>
         <button
           onClick={signOut}
           className="sidebar-nav-item w-full text-destructive/80 hover:text-destructive hover:bg-destructive/10"

@@ -101,6 +101,131 @@ export type Database = {
         }
         Relationships: []
       }
+      fund_accounts: {
+        Row: {
+          account_number: string | null
+          account_type: Database["public"]["Enums"]["fund_account_type"]
+          bank_name: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          notes: string | null
+        }
+        Insert: {
+          account_number?: string | null
+          account_type?: Database["public"]["Enums"]["fund_account_type"]
+          bank_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+        }
+        Update: {
+          account_number?: string | null
+          account_type?: Database["public"]["Enums"]["fund_account_type"]
+          bank_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+        }
+        Relationships: []
+      }
+      fund_contributions: {
+        Row: {
+          amount: number
+          contribution_date: string
+          created_at: string
+          created_by: string | null
+          fund_account_id: string | null
+          funder_name: string
+          id: string
+          member_id: string | null
+          notes: string | null
+        }
+        Insert: {
+          amount: number
+          contribution_date?: string
+          created_at?: string
+          created_by?: string | null
+          fund_account_id?: string | null
+          funder_name: string
+          id?: string
+          member_id?: string | null
+          notes?: string | null
+        }
+        Update: {
+          amount?: number
+          contribution_date?: string
+          created_at?: string
+          created_by?: string | null
+          fund_account_id?: string | null
+          funder_name?: string
+          id?: string
+          member_id?: string | null
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fund_contributions_fund_account_id_fkey"
+            columns: ["fund_account_id"]
+            isOneToOne: false
+            referencedRelation: "fund_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fund_contributions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fund_expenses: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          description: string | null
+          expense_date: string
+          fund_account_id: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expense_date?: string
+          fund_account_id?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expense_date?: string
+          fund_account_id?: string | null
+          id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fund_expenses_fund_account_id_fkey"
+            columns: ["fund_account_id"]
+            isOneToOne: false
+            referencedRelation: "fund_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       members: {
         Row: {
           address: string | null
@@ -272,6 +397,7 @@ export type Database = {
     }
     Enums: {
       app_role: "president" | "nazim"
+      fund_account_type: "cash" | "bank"
       member_status: "active" | "pending_payment" | "completed"
       membership_type: "annual" | "life"
     }
@@ -402,6 +528,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["president", "nazim"],
+      fund_account_type: ["cash", "bank"],
       member_status: ["active", "pending_payment", "completed"],
       membership_type: ["annual", "life"],
     },

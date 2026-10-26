@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { MetricCard } from "@/components/MetricCard";
+import MetricCard from "@/components/MetricCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -121,7 +121,7 @@ const TehreekFund = () => {
     e.preventDefault();
     const { error } = await supabase.from("fund_accounts").insert({
       name: accountForm.name.trim(),
-      account_type: accountForm.account_type,
+      account_type: accountForm.account_type as "cash" | "bank",
       bank_name: accountForm.account_type === "bank" ? accountForm.bank_name.trim() || null : null,
       account_number: accountForm.account_type === "bank" ? accountForm.account_number.trim() || null : null,
       notes: accountForm.notes || null,

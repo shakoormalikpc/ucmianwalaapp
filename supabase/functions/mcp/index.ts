@@ -3,10 +3,10 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.26.3";
 
 // src/lib/mcp/tools/list-members.ts
-import { defineTool } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool } from "npm:@lovable.dev/mcp-js@0.26.3";
 import { z } from "npm:zod@^3.25.76";
 
 // src/lib/mcp/supabase.ts
@@ -89,7 +89,7 @@ var list_members_default = defineTool({
 });
 
 // src/lib/mcp/tools/get-member.ts
-import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.26.3";
 import { z as z2 } from "npm:zod@^3.25.76";
 var get_member_default = defineTool2({
   name: "get_member",
@@ -118,7 +118,7 @@ var get_member_default = defineTool2({
 });
 
 // src/lib/mcp/tools/list-payments.ts
-import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.26.3";
 import { z as z3 } from "npm:zod@^3.25.76";
 var list_payments_default = defineTool3({
   name: "list_payments",
@@ -149,7 +149,7 @@ var list_payments_default = defineTool3({
 });
 
 // src/lib/mcp/tools/record-payment.ts
-import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.26.3";
 import { z as z4 } from "npm:zod@^3.25.76";
 var record_payment_default = defineTool4({
   name: "record_payment",
@@ -185,7 +185,7 @@ var record_payment_default = defineTool4({
 });
 
 // src/lib/mcp/tools/list-donations.ts
-import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.3";
 import { z as z5 } from "npm:zod@^3.25.76";
 var list_donations_default = defineTool5({
   name: "list_donations",
@@ -216,7 +216,7 @@ var list_donations_default = defineTool5({
 });
 
 // src/lib/mcp/tools/add-donation.ts
-import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.26.3";
 import { z as z6 } from "npm:zod@^3.25.76";
 var add_donation_default = defineTool6({
   name: "add_donation",
@@ -252,7 +252,7 @@ var add_donation_default = defineTool6({
 });
 
 // src/lib/mcp/tools/fund-summary.ts
-import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.26.3";
 import { z as z7 } from "npm:zod@^3.25.76";
 var fund_summary_default = defineTool7({
   name: "fund_summary",
@@ -307,7 +307,7 @@ var fund_summary_default = defineTool7({
 });
 
 // src/lib/mcp/tools/list-activities.ts
-import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.26.3";
 import { z as z8 } from "npm:zod@^3.25.76";
 var list_activities_default = defineTool8({
   name: "list_activities",
@@ -332,7 +332,7 @@ var list_activities_default = defineTool8({
 });
 
 // src/lib/mcp/tools/log-activity.ts
-import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.26.3";
 import { z as z9 } from "npm:zod@^3.25.76";
 var log_activity_default = defineTool9({
   name: "log_activity",
@@ -382,5 +382,5 @@ var mcp_default = defineMcp({
 });
 
 // lovable-mcp-supabase-entry.ts
-import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.26.1/stacks/supabase";
+import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.26.3/stacks/supabase";
 Deno.serve(createSupabaseHandler(mcp_default, { functionName: "mcp" }));

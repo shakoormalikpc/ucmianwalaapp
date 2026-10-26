@@ -299,7 +299,43 @@ const TehreekFund = () => {
         </TabsList>
 
         <TabsContent value="contributions">
-          <div className="flex justify-end mb-3">
+          <div className="flex justify-end gap-2 mb-3">
+            <Dialog open={addFundOpen} onOpenChange={setAddFundOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm"><Plus className="w-4 h-4 mr-1" />Add Fund</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle className="font-heading">Add Fund</DialogTitle></DialogHeader>
+                <form onSubmit={handleAddFund} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label>Amount *</Label>
+                    <Input type="number" min="1" placeholder="e.g. 5000" value={fundForm.amount} onChange={(e) => setFundForm({ ...fundForm, amount: e.target.value })} required />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Source (optional)</Label>
+                    <Input placeholder="e.g. Jalsa collection / President deposit" value={fundForm.source} onChange={(e) => setFundForm({ ...fundForm, source: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Date</Label>
+                    <Input type="date" value={fundForm.contribution_date} onChange={(e) => setFundForm({ ...fundForm, contribution_date: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Received In</Label>
+                    <Select value={fundForm.fund_account_id} onValueChange={(v) => setFundForm({ ...fundForm, fund_account_id: v })}>
+                      <SelectTrigger><SelectValue placeholder="Select account (optional)" /></SelectTrigger>
+                      <SelectContent>
+                        {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.name} ({a.account_type === "bank" ? "Bank" : "Cash"})</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Notes</Label>
+                    <Textarea rows={2} value={fundForm.notes} onChange={(e) => setFundForm({ ...fundForm, notes: e.target.value })} />
+                  </div>
+                  <Button type="submit" className="w-full">Add Fund</Button>
+                </form>
+              </DialogContent>
+            </Dialog>
             <Dialog open={addContribOpen} onOpenChange={setAddContribOpen}>
               <DialogTrigger asChild>
                 <Button size="sm"><Plus className="w-4 h-4 mr-1" />Add Contribution</Button>
